@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#f5fbff">
+<title>釣魚大作戰 | Fishing Frenzy</title>
+<style>
+  :root{--ink:#193750;--muted:#688296;--blue:#2587c7;--aqua:#e8f7ff;--line:#d9eaf4;--coral:#ff786c;--lime:#c5e95b;--shadow:0 16px 45px #28547314}
+  *{box-sizing:border-box} body{margin:0;background:linear-gradient(135deg,#f3fbff,#f8fbf0 65%,#fff9ef);color:var(--ink);font-family:ui-rounded,"Arial Rounded MT Bold",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+  button{font:inherit;color:inherit;cursor:pointer;border:0}
+  .app{max-width:1180px;margin:auto;padding:20px 22px 30px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 16px}
+  .brand{display:flex;align-items:center;gap:13px}.logo{width:48px;height:48px;border-radius:16px;background:linear-gradient(145deg,#83d9ec,#4c9de0);display:grid;place-items:center;font-size:28px;box-shadow:0 6px 14px #2488b52a}
+  h1{font-size:clamp(23px,3vw,32px);line-height:1;margin:0;letter-spacing:-.7px}.subtitle{color:var(--muted);font-size:13px;margin-top:5px;font-weight:600}
+  .top-note{border:1px solid #dcecf4;border-radius:999px;padding:9px 14px;background:#ffffffb8;color:#57778c;font-size:12px;font-weight:700}.header-actions{display:flex;align-items:center;gap:9px}.language-btn{border:1px solid #dcecf4;border-radius:999px;padding:9px 13px;background:#fff;color:#357595;font-size:12px;font-weight:900}.language-btn:active{transform:scale(.97)}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:stretch}
+  .stage-card,.side-card{background:#ffffffd9;border:1px solid #deedf5;border-radius:25px;box-shadow:var(--shadow)}
+  .stage-card{overflow:hidden;position:relative;padding:11px;min-height:570px;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#eaf8ff,#f6fcff)}
+  canvas{width:100%;height:100%;position:absolute;inset:0;touch-action:none}
+  .stage-hud{position:absolute;z-index:2;left:20px;right:20px;top:17px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+  .pill{border:1px solid #dcebf2;background:#fffffff0;border-radius:14px;padding:8px 12px;box-shadow:0 4px 12px #27526e12;font-size:12px;font-weight:800;color:#4f7188}
+  .pill strong{color:#173b59;font-size:18px;margin-left:5px;letter-spacing:.3px}
+  .stage-message{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%);width:min(86%,360px);padding:23px 24px 20px;border:1px solid #d9edf6;border-radius:24px;background:#fffffff2;box-shadow:0 18px 48px #17496a28;text-align:center;backdrop-filter:blur(10px);transition:opacity .2s,transform .2s}
+  .stage-message.hidden{opacity:0;pointer-events:none;transform:translate(-50%,-46%)}
+  .stage-message .emoji{font-size:38px;line-height:1.1;margin-bottom:8px}.stage-message h2{margin:0;font-size:22px}.stage-message p{font-size:14px;color:#658095;line-height:1.55;margin:9px 0 15px}
+  .message-btn{background:#2388c4;color:white;border-radius:13px;padding:11px 19px;font-weight:900;box-shadow:0 5px 0 #176b9d;transition:transform .1s,box-shadow .1s}.message-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #176b9d}
+  .side-card{padding:18px;display:flex;flex-direction:column;gap:16px}
+  .score-title{display:flex;align-items:center;justify-content:space-between}.score-title h2{font-size:16px;margin:0}.best{font-size:11px;color:#71899a;font-weight:750}
+  .scoreboard{display:grid;gap:9px}.score-row{display:flex;align-items:center;gap:11px;border:1px solid #e1edf3;border-radius:15px;padding:10px 12px;background:#fbfdfe;transition:transform .2s,border-color .2s}.score-row.active{border-color:#63b6e3;background:#f1fbff;transform:translateX(2px)}
+  .player-dot{width:13px;height:13px;border-radius:50%;background:var(--pc);box-shadow:0 0 0 4px color-mix(in srgb,var(--pc),white 82%)}.player-label{font-size:13px;font-weight:800;flex:1}.player-points{font-size:20px;font-weight:950;color:#234d68}.player-points small{font-size:10px;color:#7a94a4;margin-left:3px}
+  .controls h3{font-size:13px;margin:0 0 9px}.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mode-btn{border:1px solid #dceaf2;border-radius:13px;padding:10px 7px;background:white;font-size:12px;font-weight:800;color:#55768b}.mode-btn.selected{border-color:#63b6e3;background:#effaff;color:#1677b1;box-shadow:inset 0 0 0 1px #63b6e3}.speed-control{margin-top:12px}.speed-control h3{margin-bottom:7px}.speed-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.speed-btn{border:1px solid #dceaf2;border-radius:11px;padding:8px 5px;background:white;color:#55768b;font-size:12px;font-weight:850}.speed-btn.selected{border-color:#71b9db;background:#effaff;color:#1677b1;box-shadow:inset 0 0 0 1px #71b9db}.start-btn{width:100%;margin-top:9px;padding:12px;border-radius:14px;background:#8bbd32;color:white;font-size:14px;font-weight:950;box-shadow:0 5px 0 #6a9a20}.start-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #6a9a20}.start-btn:disabled{opacity:.45;cursor:default;transform:none}
+  .howto{border-top:1px solid #e4eef3;padding-top:13px}.howto h3{margin-bottom:7px}.howto p{margin:0;color:#71899a;font-size:12px;line-height:1.55}.tip{border-radius:14px;background:#fff7e8;padding:11px 12px;color:#846a36;font-size:11px;line-height:1.45;font-weight:700}.tip b{color:#735621}
+  .bottom-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto}.sound-btn,.restart-btn{background:#f0f7fa;border:1px solid #deebf1;border-radius:12px;padding:9px 11px;font-size:11px;font-weight:800;color:#5c7b8d}.restart-btn{color:#b96257;background:#fff5f2;border-color:#f5ded8}
+  footer{text-align:center;color:#91a7b5;font-size:11px;margin:13px 0 0}
+  @media(max-width:820px){.app{padding:14px 12px 22px}.layout{grid-template-columns:minmax(0,1fr)}.stage-card{width:100%;height:clamp(320px,92vw,520px);min-height:320px;aspect-ratio:auto;border-radius:21px}.side-card{padding:14px;border-radius:21px}.top-note{display:none}.stage-hud{left:12px;right:12px;top:11px}.pill{padding:6px 9px}.pill strong{font-size:16px}.side-card{display:grid;grid-template-columns:1fr 1fr;gap:12px}.score-area{grid-column:1/-1}.controls{grid-column:1/-1}.howto{grid-column:1/-1}.tip{grid-column:1/-1}.bottom-row{grid-column:1/-1}.scoreboard{grid-template-columns:1fr 1fr}.score-row{padding:8px}.stage-message{padding:17px 18px}.stage-message p{font-size:13px}}
+  @media(max-width:440px){header{margin-bottom:10px}.brand{gap:10px}.logo{height:42px;width:42px;font-size:24px;border-radius:14px}.subtitle{font-size:11px}.stage-card{height:102vw;min-height:320px}.stage-message{width:88%}.scoreboard{grid-template-columns:1fr}.side-card{grid-template-columns:1fr}.score-area,.controls,.howto,.tip,.bottom-row{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><div class="logo">🎣</div><div><h1 data-i18n="title">釣魚大作戰</h1><div class="subtitle" data-i18n="subtitle">魚池轉呀轉，等魚張開口就落鈎！</div></div></div>
+    <div class="header-actions"><div class="top-note" data-i18n="topNote">🐟 立體魚池 · 將魚放入「你」字桶</div><button class="language-btn" id="languageBtn" type="button" aria-label="Switch language">EN</button></div>
+  </header>
+  <main class="layout">
+    <section class="stage-card" id="stage">
+      <canvas id="pond" aria-label="轉動中的釣魚池塘" data-i18n-aria="canvasLabel"></canvas>
+      <div class="stage-hud"><div class="pill" id="turnPill">準備好未？</div><div class="pill">⏱ <strong id="timer">60</strong></div></div>
+      <div class="stage-message" id="message">
+        <div class="emoji" id="messageEmoji">🐠</div><h2 id="messageTitle">準備開始釣魚？</h2><p id="messageText">按住魚竿柄，將魚鈎穿過張開嘅黑色嘴位，再向上抽起。帶住魚去自己透明桶上方放手，魚就會跌入桶內並得分。</p><button class="message-btn" id="messageBtn">開始遊戲</button>
+      </div>
+    </section>
+    <aside class="side-card">
+      <div class="score-area"><div class="score-title"><h2 data-i18n="scoreTitle">今場分數</h2><span class="best"><span data-i18n="best">個人最佳</span> <b id="bestScore">0</b></span></div><div class="scoreboard" id="scoreboard"></div></div>
+      <div class="controls"><h3 data-i18n="chooseMode">選擇玩法</h3><div class="mode-grid"><button class="mode-btn selected" data-mode="solo" data-i18n="solo">🎣 單人挑戰</button><button class="mode-btn" data-mode="duel" data-i18n="duel">⚔️ 雙人對戰</button></div><div class="speed-control"><h3 data-i18n="speedTitle">魚池及魚嘴速度</h3><div class="speed-grid"><button class="speed-btn" data-speed="0.7" data-i18n="slow">慢</button><button class="speed-btn selected" data-speed="1" data-i18n="medium">中</button><button class="speed-btn" data-speed="1.5" data-i18n="fast">快</button></div></div><div class="speed-control"><label for="ringCount" data-i18n="ringCount">魚盤圈數</label> <select id="ringCount"><option value="1" data-i18n="oneRing">1 圈</option><option value="2" selected data-i18n="twoRings">2 圈</option><option value="3" data-i18n="threeRings">3 圈</option></select></div><button class="start-btn" id="startBtn">開始單人挑戰</button></div>
+      <div class="howto"><h3 data-i18n="howToTitle">點樣玩</h3><p data-i18n="howTo">按住魚竿柄拖動，魚鈎穿過張開嘅黑色嘴圈再向上抽起。將魚帶到自己嘅透明魚桶，放手放魚入桶並得分；魚會喺桶內游動。</p></div>
+      <div class="tip"><b data-i18n="tipLabel">小貼士：</b><span data-i18n="tip">慢、中、快三檔會同時調整魚池旋轉同魚嘴開合速度；桶外放手，魚會返魚盤。</span></div>
+      <div class="bottom-row"><button class="sound-btn" id="soundBtn">🎵 音樂及音效：開</button><button class="restart-btn" id="restartBtn" data-i18n="restart">↻ 重新開始</button></div>
+    </aside>
+  </main>
+  <footer data-i18n="footer">單人限時 60 秒 · 雙人輪流各 30 秒 · 手機、平板和電腦都可以玩</footer>
+</div>
+<script>
+(()=>{
+  const canvas=document.querySelector('#pond'),ctx=canvas.getContext('2d');
+  const $=s=>document.querySelector(s), msg=$('#message'), msgTitle=$('#messageTitle'), msgText=$('#messageText'), msgEmoji=$('#messageEmoji'), msgBtn=$('#messageBtn');
+  const COLORS=['#ff795f','#45b8e8','#e77ab5','#f5b943'];
+  const I18N={zh:{title:'釣魚大作戰',subtitle:'魚池轉呀轉，等魚張開口就落鈎！',topNote:'🐟 立體魚池 · 將魚放入「你」字桶',canvasLabel:'轉動中的釣魚池塘',scoreTitle:'今場分數',best:'個人最佳',chooseMode:'選擇玩法',solo:'🎣 單人挑戰',duel:'⚔️ 雙人對戰',speedTitle:'魚池及魚嘴速度',slow:'慢',medium:'中',fast:'快',ringCount:'魚盤圈數',oneRing:'1 圈',twoRings:'2 圈',threeRings:'3 圈',howToTitle:'點樣玩',howTo:'按住魚竿柄拖動，魚鈎穿過張開嘅黑色嘴圈再向上抽起。將魚帶到自己嘅透明魚桶，放手放魚入桶並得分；魚會喺桶內游動。',tipLabel:'小貼士：',tip:'慢、中、快三檔會同時調整魚池旋轉同魚嘴開合速度；桶外放手，魚會返魚盤。',restart:'↻ 重新開始',footer:'單人限時 60 秒 · 雙人輪流各 30 秒 · 手機、平板和電腦都可以玩',ready:'準備好未？',readyTitle:'準備開始釣魚？',readyText:'按住魚竿柄，將魚鈎穿過張開嘅黑色嘴位，再向上抽起。帶住魚去自己透明桶上方放手，魚就會跌入桶內並得分。',start:'開始遊戲',soloStart:'開始單人挑戰',duelStart:'開始雙人對戰',soundOn:'🎵 音樂及音效：開',soundOff:'🔇 音樂及音效：關',soloToast:'向上抽魚杆鈎住魚；帶到你個透明桶，再放手！',duelToast:'玩家 1 開始！鈎魚後拖到自己個透明桶，放手放入！',p2Toast:'玩家 2 開始！',p2Turn:'輪到玩家 2！',handoffText:'把裝置交給另一位玩家，準備好就開始第二回合。',p2Start:'開始玩家 2 回合',handoff:'交換玩家',finished:'本局完結',challengeDone:'挑戰完成！',tie:'平手！',p1Wins:'玩家 1 勝出！',p2Wins:'玩家 2 勝出！',again:'再玩一局',you:'你',player1:'玩家 1',player2:'玩家 2',turn:'回合',points:'分',bucket:'桶',youLabel:'你'},en:{title:'Fishing Frenzy',subtitle:'The pond is spinning. Hook a fish when its mouth opens!',topNote:'🐟 3D fishing pond · Drop fish into your clear bucket',canvasLabel:'Spinning fishing pond',scoreTitle:'Score',best:'Best',chooseMode:'Choose a mode',solo:'🎣 Solo challenge',duel:'⚔️ 2-player duel',speedTitle:'Pond & fish speed',slow:'Slow',medium:'Med',fast:'Fast',ringCount:'Pond rings',oneRing:'1 ring',twoRings:'2 rings',threeRings:'3 rings',howToTitle:'How to play',howTo:'Hold and drag the rod handle. Guide the hook through an open black mouth, then lift. Carry the fish over your clear bucket and release to score. Fish swim around inside the bucket.',tipLabel:'Tip: ',tip:'Slow, medium and fast adjust both pond rotation and mouth speed. Release outside your bucket and the fish returns to the pond.',restart:'↻ Restart',footer:'60 seconds solo · 30 seconds per player in a duel · Play on phone, tablet or computer',ready:'Ready?',readyTitle:'Ready to fish?',readyText:'Hold the rod handle, guide the hook through an open black mouth, then lift. Carry your fish over your clear bucket and release to score.',start:'Start game',soloStart:'Start solo challenge',duelStart:'Start 2-player duel',soundOn:'🎵 Music & sound: On',soundOff:'🔇 Music & sound: Off',soloToast:'Lift the rod to hook a fish, carry it to your clear bucket, then release!',duelToast:'Player 1 starts! Hook a fish, carry it to your bucket, then release!',p2Toast:'Player 2 starts!',p2Turn:"Player 2's turn!",handoffText:'Pass the device to the next player. Start the second round when ready.',p2Start:'Start Player 2 round',handoff:'Pass to Player 2',finished:'Round over',challengeDone:'Challenge complete!',tie:"It's a tie!",p1Wins:'Player 1 wins!',p2Wins:'Player 2 wins!',again:'Play again',you:'You',player1:'Player 1',player2:'Player 2',turn:'turn',points:'pts',bucket:'Bucket',youLabel:'You'}};
+  const tr=k=>I18N[state.lang][k]||I18N.zh[k]||k;
+  function applyLanguage(){document.documentElement.lang=state.lang==='en'?'en':'zh-Hant';document.title=tr('title')+' | Fishing Frenzy';document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=tr(el.dataset.i18n));document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',tr(el.dataset.i18nAria)));$('#languageBtn').textContent=state.lang==='zh'?'EN':'中文';$('#soundBtn').textContent=state.sound?tr('soundOn'):tr('soundOff');if(state.phase==='ready'){$('#messageTitle').textContent=tr('readyTitle');$('#messageText').textContent=tr('readyText');$('#messageBtn').textContent=tr('start');}else if(state.phase==='handoff'){$('#messageTitle').textContent=tr('p2Turn');$('#messageText').textContent=tr('handoffText');$('#messageBtn').textContent=tr('p2Start');}else if(state.phase==='finished'){const win=state.players.length===1?tr('challengeDone'):state.players[0].score===state.players[1].score?tr('tie'):state.players[0].score>state.players[1].score?tr('p1Wins'):tr('p2Wins');$('#messageTitle').textContent=win;$('#messageText').textContent=state.players.map((p,i)=>`${state.mode==='duel'?(i===0?tr('player1'):tr('player2')):tr('you')}: ${p.score} ${tr('points')}`).join('　　');$('#messageBtn').textContent=tr('again');}$('#startBtn').textContent=state.phase==='finished'?tr('again'):(state.mode==='solo'?tr('soloStart'):tr('duelStart'));updateHUD();}
+  $('#languageBtn').addEventListener('click',()=>{state.lang=state.lang==='zh'?'en':'zh';localStorage.setItem('fishingLang',state.lang);applyLanguage();});
+
+  const state={lang:localStorage.getItem('fishingLang')||'zh',mode:'solo',phase:'ready',players:[],turn:0,time:60,angle:0,speed:1,ringCount:2,last:performance.now(),fish:[],bucketFish:[],pointer:{x:-100,y:-100,inside:false,moved:false},target:null,hookedFish:null,splashes:[],toast:'',toastUntil:0,sound:true,audio:null,musicTimer:null,round:0};
+  const ringLayouts={
+    1:[{n:12,r:.62}],
+    2:[{n:12,r:.70},{n:8,r:.39}],
+    3:[{n:13,r:.80},{n:9,r:.51},{n:4,r:.22}]
+  };
+  let W=0,H=0,DPR=1,cx=0,cy=0,R=0;
+  const VIEW_TILT=.76;
+  function resize(){const rect=canvas.getBoundingClientRect();DPR=Math.min(devicePixelRatio||1,2);W=rect.width;H=rect.height;canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);cx=W/2;cy=H*.36;R=Math.min(W*.418,H*.429);}
+  new ResizeObserver(resize).observe(canvas); resize();
+  function makeFish(){let arr=[];ringLayouts[state.ringCount].forEach((ring,ri)=>{for(let i=0;i<ring.n;i++)arr.push({a:Math.PI*2*i/ring.n+(ri===0?-.18:0),r:ring.r,ring:ri,phase:Math.random()*3.4,period:3.1+Math.random()*.9,openFor:.72+Math.random()*.26,color:['#fa735c','#4aafe0','#e875a9','#f4b641','#8c78d9','#55bd82'][Math.floor(Math.random()*6)],caught:0,wiggle:Math.random()*6.28});});return arr;}
+  state.fish=makeFish();
+  function fishMotion(f,t){const cycle=(t*state.speed+f.phase)%f.period,up=.48,open=f.openFor,down=.5,smooth=x=>x*x*(3-2*x);let lift=0,mouth=0,mouthOpen=false;if(cycle<up){lift=smooth(cycle/up);mouth=lift;}else if(cycle<up+open){lift=1;mouth=1;mouthOpen=true;}else if(cycle<up+open+down){lift=1-smooth((cycle-up-open)/down);mouth=lift;}return{lift,mouth,mouthOpen};}
+  function fishOpen(f,t){return fishMotion(f,t).mouthOpen;}
+  function fishSlotPos(f,t){const a=f.a+state.angle*(f.ring===1?-1.17:1),depthScale=.84+.18*((Math.sin(a)+1)/2);return{x:cx+Math.cos(a)*R*f.r,y:cy+Math.sin(a)*R*f.r*.78,a,depthScale};}
+  function fishPos(f,t){const slot=fishSlotPos(f,t),motion=fishMotion(f,t),bob=Math.sin(t*3.2*state.speed+f.wiggle)*2.5;return{...slot,y:slot.y+bob+(1-motion.lift)*R*.06-motion.lift*R*.14,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1};}
+  function fishMouthPos(f,p,t){const size=R*(f.ring===0?.22:.23),depth=p.depthScale||1,scaleY=(p.scaleY||1)*depth*.82;return{x:p.x+size*.04*scaleY,y:p.y-size*.37*depth};}
+  function rounded(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}}
+  const bucketWidth=.98,bucketHeight=.78;
+  function basketPoint(index){return{x:W*.5,y:H*.94};}
+  function defaultHand(){return{x:W*.84,y:H*.58};}
+  function rodSide(){return state.mode==='duel'?(state.turn===0?1:-1):-1;}
+  const lineSwing={angle:0,velocity:0};
+  function moveLine(deltaX){
+    const lag=deltaX/Math.max(1,R*.73);
+    lineSwing.angle=Math.max(-.68,Math.min(.68,lineSwing.angle-lag*.75));
+  }
+  function animateLine(dt){
+    const steps=Math.max(1,Math.ceil(dt*120));
+    const step=dt/steps;
+    for(let i=0;i<steps;i++){
+      lineSwing.velocity+=(-37*Math.sin(lineSwing.angle)-4.2*lineSwing.velocity)*step;
+      lineSwing.angle+=lineSwing.velocity*step;
+      if(Math.abs(lineSwing.angle)>.68){
+        lineSwing.angle=Math.sign(lineSwing.angle)*.68;
+        lineSwing.velocity=0;
+      }
+    }
+  }
+  function rodPose(hand,side){const norm=Math.hypot(.70,.714),ux=side*.70/norm,uy=-.714/norm,shaftLen=R*.91,tip={x:hand.x+ux*shaftLen,y:hand.y+uy*shaftLen},hook={x:tip.x+Math.sin(lineSwing.angle)*R*.73,y:tip.y+Math.cos(lineSwing.angle)*R*.73};return{ux,uy,tip,hook};}
+  function drawBucket(p,color,label,t){
+    const w=R*bucketWidth,h=R*bucketHeight,top=p.y-h*.5,bottom=p.y+h*.5;
+    const wallPath=()=>{ctx.beginPath();ctx.moveTo(p.x-w*.49,top);ctx.lineTo(p.x+w*.49,top);ctx.lineTo(p.x+w*.37,bottom-R*.025);ctx.quadraticCurveTo(p.x,bottom+R*.015,p.x-w*.37,bottom-R*.025);ctx.closePath();};
+    ctx.save();ctx.beginPath();ctx.ellipse(p.x,bottom-R*.005,w*.38,R*.045,0,0,Math.PI*2);ctx.fillStyle='#294d5c24';ctx.fill();
+    wallPath();ctx.fillStyle='#a9eaf433';ctx.fill();ctx.save();wallPath();ctx.clip();
+    for(const item of state.bucketFish.filter(f=>f.player===label)){
+      const age=Math.max(0,t-item.born),drop=Math.min(1,age/.42),ease=drop*drop*(3-2*drop),swim=Math.max(0,age-.42),x0=item.startX??item.dx,y0=item.startY??item.dy;
+      const heading=swim*1.15+item.phase;
+      const swimX=item.dx+Math.sin(heading)*R*.16;
+      const x=drop<1?x0+(swimX-x0)*ease:swimX;
+      const y=drop<1?y0+(item.dy-y0)*ease-Math.sin(drop*Math.PI)*R*.045:item.dy+Math.cos(swim*.9+item.phase)*R*.025;
+      const fishPose={x:p.x+x,y:p.y+y,swimDirection:Math.sign(Math.cos(heading)),depthScale:.9,scaleBody:item.scale,scaleY:item.scale*1.28,lift:0};drawFish(item.fish,fishPose,t,false,true,false);
+    }
+    ctx.beginPath();ctx.ellipse(p.x,p.y+R*.045,w*.37,R*.035,0,0,Math.PI*2);ctx.fillStyle='#8be0f122';ctx.fill();ctx.restore();
+    wallPath();ctx.strokeStyle='#4cabcaa8';ctx.lineWidth=Math.max(1.5,R*.01);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(p.x-w*.45,top+R*.018);ctx.lineTo(p.x-w*.35,bottom-R*.045);ctx.strokeStyle='#ffffffb0';ctx.lineWidth=Math.max(2,R*.014);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(p.x+w*.45,top+R*.018);ctx.lineTo(p.x+w*.35,bottom-R*.045);ctx.strokeStyle='#ffffff70';ctx.lineWidth=Math.max(1.5,R*.01);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(p.x,p.y-h*.48,w*.50,R*.045,0,0,Math.PI*2);ctx.fillStyle='#e5fbff55';ctx.fill();ctx.strokeStyle=color+'cc';ctx.lineWidth=Math.max(2,R*.014);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(p.x,bottom-R*.01,w*.38,R*.035,0,0,Math.PI*2);ctx.strokeStyle='#a4ebf7c9';ctx.lineWidth=Math.max(2,R*.012);ctx.stroke();
+    rounded(p.x-w*.23,p.y+h*.20,w*.46,h*.18,7,'#ffffffbd',color);ctx.fillStyle=color;ctx.font=`900 ${Math.max(8,R*.035)}px system-ui`;ctx.textAlign='center';ctx.fillText(label==='solo'?tr('bucket'):label,p.x,p.y+h*.33);ctx.restore();
+  }
+  function drawFish(f,p,t,selected,forceVisible=false,forceOpen=false){
+    const size=(f.ring===0?R*.22:R*.23), motion=fishMotion(f,t), open=forceOpen||motion.mouthOpen,jaw=forceOpen?1:motion.mouth,caught=!forceVisible&&f.caught>t, depth=p.depthScale||1;
+    if(!forceVisible){
+      ctx.save();ctx.translate(p.x,p.y+(p.lift||0)*R*.14);ctx.scale(depth*(p.scaleBody||1),.34*(p.scaleY||1));ctx.beginPath();ctx.ellipse(0,0,size*.72,size*.45,0,0,Math.PI*2);ctx.fillStyle='#123c5a38';ctx.shadowColor='#123c5a55';ctx.shadowBlur=R*.025;ctx.fill();ctx.restore();
+    }
+    ctx.save();ctx.translate(p.x,p.y);
+    if(p.swimDirection)ctx.scale(p.swimDirection,1);
+    else ctx.rotate(-Math.PI/2);
+    ctx.scale(depth*(p.scaleBody||1),(p.scaleY||1)*depth*.82);
+    if(selected&&!caught){ctx.beginPath();ctx.arc(0,0,size*1.18,0,7);ctx.fillStyle=open?'#fff4a94d':'#ffffff39';ctx.fill();ctx.strokeStyle=open?'#fff08a':'#ffffffa0';ctx.lineWidth=2.5;ctx.stroke();}
+    if(caught){ctx.globalAlpha=.18;}
+    // tail and fins
+    const fin=ctx.createLinearGradient(-size*.2,-size*.5,size*.5,size*.45);fin.addColorStop(0,'#ffffff9a');fin.addColorStop(.35,f.color);fin.addColorStop(1,'#173750');ctx.fillStyle=fin;ctx.beginPath();ctx.moveTo(-size*.53,0);ctx.lineTo(-size*1.07,-size*.47);ctx.quadraticCurveTo(-size*.89,0,-size*1.07,size*.47);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(-size*.08,-size*.28);ctx.lineTo(size*.18,-size*.72);ctx.lineTo(size*.48,-size*.27);ctx.closePath();ctx.fill();
+    // body
+    ctx.beginPath();ctx.ellipse(0,0,size*.72,size*.48,0,0,Math.PI*2);const body=ctx.createLinearGradient(-size*.2,-size*.5,size*.28,size*.5);body.addColorStop(0,'#ffffffd0');body.addColorStop(.22,f.color);body.addColorStop(.72,f.color);body.addColorStop(1,'#183953');ctx.fillStyle=body;ctx.fill();ctx.strokeStyle='#173d5960';ctx.lineWidth=1.4;ctx.stroke();
+    ctx.beginPath();ctx.ellipse(size*.06,size*.17,size*.46,size*.2,0,0,Math.PI);const belly=ctx.createLinearGradient(0,size*.02,0,size*.38);belly.addColorStop(0,'#fffdf0');belly.addColorStop(1,'#dfd3c1');ctx.fillStyle=belly;ctx.fill();ctx.beginPath();ctx.ellipse(-size*.08,-size*.23,size*.28,size*.075,-.2,0,Math.PI*2);ctx.fillStyle='#ffffff99';ctx.fill();
+    const gape=jaw;
+    const mouth=mouthTriangle(gape);
+    ctx.beginPath();
+    ctx.moveTo(mouth[0][0]*size,mouth[0][1]*size);
+    for(const [x,y] of mouth.slice(1))ctx.lineTo(x*size,y*size);
+    if(gape>0)ctx.closePath();
+    ctx.fillStyle='#241326';ctx.fill();
+    ctx.strokeStyle=gape>.08?'#ffd1a6':'#592d47';
+    ctx.lineWidth=Math.max(1.4,size*.035);
+    ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();
+    if(gape>.08){
+      ctx.fillStyle='#fff8e5';
+      for(const side of [-1,1])for(const position of [.46,.69,.89]){
+        const x=mouth[0][0]+(mouth[1][0]-mouth[0][0])*position;
+        const y=.04+side*.39*gape*position;
+        ctx.beginPath();
+        ctx.moveTo((x-.049)*size,(y-side*.034*gape)*size);
+        ctx.lineTo((x+.049)*size,(y+side*.034*gape)*size);
+        ctx.lineTo(x*size,(y-side*(position===.89?.23:.17)*gape)*size);
+        ctx.closePath();ctx.fill();
+      }
+    }
+    // keep the eye visible beside the wide-open mouth
+    ctx.beginPath();ctx.arc(size*.16,-size*.17,size*.157,0,Math.PI*2);ctx.fillStyle='white';ctx.fill();ctx.beginPath();ctx.arc(size*.19,-size*.17,size*.080,0,Math.PI*2);ctx.fillStyle='#173750';ctx.fill();ctx.beginPath();ctx.arc(size*.17,-size*.205,size*.030,0,Math.PI*2);ctx.fillStyle='#ffffff';ctx.fill();
+    ctx.restore();
+    if(caught){ctx.save();ctx.globalAlpha=Math.max(.08,(f.caught-t)/.9);ctx.fillStyle='#fff';ctx.font=`900 ${Math.max(14,size*.52)}px system-ui`;ctx.textAlign='center';ctx.fillText('✓',p.x,p.y-size*.76);ctx.restore();}
+  }
+  function drawFishFromHole(f,p,t,selected){
+    const lift=Math.max(0,Math.min(1,p.lift||0)),slot=fishSlotPos(f,t),well=R*(f.ring===0?.15:.16)*slot.depthScale;
+    if(lift<1){ctx.save();ctx.beginPath();ctx.ellipse(slot.x,slot.y,well*.81,well*.55,0,0,Math.PI*2);ctx.clip();drawFish(f,p,t,selected);ctx.restore();}
+    if(lift>0){ctx.save();ctx.globalAlpha=lift;drawFish(f,p,t,selected);ctx.restore();}
+  }
+  function drawFishingRod(hand,playerColor,side){
+    const {ux,uy,tip,hook}=rodPose(hand,side);
+    const grip=R*.30;
+    hand={x:hand.x+ux*grip,y:hand.y+uy*grip};
+    const nx=-uy,ny=ux,start={x:hand.x+ux*grip*.35,y:hand.y+uy*grip*.35},bend=side*R*.035,control={x:(start.x+tip.x)/2+nx*bend,y:(start.y+tip.y)/2+ny*bend};
+    const point=q=>({x:(1-q)*(1-q)*start.x+2*(1-q)*q*control.x+q*q*tip.x,y:(1-q)*(1-q)*start.y+2*(1-q)*q*control.y+q*q*tip.y});
+    function shaft(extra){const left=[],right=[],steps=14;for(let i=0;i<=steps;i++){const q=i/steps,p=point(q),before=point(Math.max(0,q-.01)),after=point(Math.min(1,q+.01)),tx=after.x-before.x,ty=after.y-before.y,len=Math.hypot(tx,ty)||1,nx2=-ty/len,ny2=tx/len,half=R*(.029*(1-q)+.004)+extra;left.push([p.x+nx2*half,p.y+ny2*half]);right.push([p.x-nx2*half,p.y-ny2*half]);}ctx.beginPath();ctx.moveTo(left[0][0],left[0][1]);for(let i=1;i<left.length;i++)ctx.lineTo(left[i][0],left[i][1]);for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i][0],right[i][1]);ctx.closePath();}
+    ctx.save();ctx.lineJoin='round';ctx.lineCap='round';shaft(R*.006);ctx.fillStyle='#131923';ctx.fill();shaft(0);const rodFill=ctx.createLinearGradient(start.x,start.y,tip.x,tip.y);rodFill.addColorStop(0,'#707985');rodFill.addColorStop(.28,'#343c49');rodFill.addColorStop(.72,'#252b35');rodFill.addColorStop(1,'#111722');ctx.fillStyle=rodFill;ctx.fill();
+    ctx.beginPath();for(let i=0;i<=14;i++){const q=i/14,p=point(q),before=point(Math.max(0,q-.01)),after=point(Math.min(1,q+.01)),tx=after.x-before.x,ty=after.y-before.y,len=Math.hypot(tx,ty)||1,nx2=-ty/len,ny2=tx/len,x=p.x+nx2*R*(.012*(1-q)+.001),y=p.y+ny2*R*(.012*(1-q)+.001);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle='#ffffffa0';ctx.lineWidth=Math.max(1,R*.004);ctx.stroke();
+    // warm cork grip and moving reel
+    ctx.beginPath();ctx.moveTo(hand.x-ux*grip,hand.y-uy*grip);ctx.lineTo(hand.x+ux*grip*.52,hand.y+uy*grip*.52);ctx.strokeStyle='#171a20';ctx.lineWidth=Math.max(7,R*.075);ctx.stroke();ctx.strokeStyle='#9c572b';ctx.lineWidth=Math.max(5,R*.055);ctx.stroke();ctx.beginPath();ctx.moveTo(hand.x-ux*grip*.72+nx*R*.012,hand.y-uy*grip*.72+ny*R*.012);ctx.lineTo(hand.x+ux*grip*.3+nx*R*.012,hand.y+uy*grip*.3+ny*R*.012);ctx.strokeStyle='#e2a267';ctx.lineWidth=Math.max(1.5,R*.012);ctx.stroke();
+    const reelSide=side<0?-1:1,rx=hand.x+ux*R*.12+nx*reelSide*R*.06,ry=hand.y+uy*R*.12+ny*reelSide*R*.06,rr=R*.073;const reel=ctx.createRadialGradient(rx-rr*.3,ry-rr*.4,rr*.05,rx,ry,rr);reel.addColorStop(0,'#f5d88a');reel.addColorStop(.35,'#9a6738');reel.addColorStop(.72,'#3c4654');reel.addColorStop(1,'#171d27');ctx.beginPath();ctx.arc(rx,ry,rr,0,Math.PI*2);ctx.fillStyle='#171d27';ctx.fill();ctx.beginPath();ctx.arc(rx,ry,rr*.84,0,Math.PI*2);ctx.fillStyle=reel;ctx.fill();ctx.strokeStyle='#080c12';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(rx,ry,rr*.49,0,Math.PI*2);ctx.fillStyle='#647181';ctx.fill();ctx.strokeStyle='#c5d0db';ctx.lineWidth=1.4;ctx.stroke();ctx.beginPath();ctx.arc(rx,ry,rr*.19,0,Math.PI*2);ctx.fillStyle=playerColor;ctx.fill();
+    const crankX=rx+nx*reelSide*rr*.9,crankY=ry+ny*reelSide*rr*.9;ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(crankX,crankY);ctx.strokeStyle='#111722';ctx.lineWidth=3;ctx.stroke();ctx.beginPath();ctx.arc(crankX,crankY,Math.max(2,R*.018),0,Math.PI*2);ctx.fillStyle='#d1d9e1';ctx.fill();
+    // the line hangs straight down; the hook moves with the rod handle
+    ctx.beginPath();ctx.moveTo(tip.x,tip.y);ctx.lineTo(hook.x,hook.y);ctx.strokeStyle='#26323d';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(tip.x,tip.y);ctx.lineTo(hook.x,hook.y);ctx.strokeStyle='#edfaff';ctx.lineWidth=1;ctx.stroke();
+    // curved metal hook at the line end
+    if(state.hookedFish){ctx.restore();return;}
+    ctx.translate(hook.x,hook.y);
+    ctx.rotate(-lineSwing.angle);
+    ctx.translate(-hook.x,-hook.y);
+    const hookSize=Math.max(8,R*.055);ctx.beginPath();ctx.moveTo(hook.x,hook.y-hookSize*.35);ctx.lineTo(hook.x,hook.y+hookSize*.28);ctx.quadraticCurveTo(hook.x+hookSize*.08,hook.y+hookSize*.75,hook.x+hookSize*.43,hook.y+hookSize*.59);ctx.quadraticCurveTo(hook.x+hookSize*.65,hook.y+hookSize*.49,hook.x+hookSize*.55,hook.y+hookSize*.28);ctx.strokeStyle='#17212a';ctx.lineWidth=4;ctx.stroke();ctx.beginPath();ctx.moveTo(hook.x,hook.y-hookSize*.35);ctx.lineTo(hook.x,hook.y+hookSize*.28);ctx.quadraticCurveTo(hook.x+hookSize*.08,hook.y+hookSize*.75,hook.x+hookSize*.43,hook.y+hookSize*.59);ctx.quadraticCurveTo(hook.x+hookSize*.65,hook.y+hookSize*.49,hook.x+hookSize*.55,hook.y+hookSize*.28);ctx.strokeStyle='#eaf1f5';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+
+  }
+  function draw(t){ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(0,cy);ctx.scale(1,VIEW_TILT);ctx.translate(0,-cy);
+    // 3D toy body: a layered side wall, raised green rim, and tilted water plane
+    const planeY=.79;
+    ctx.beginPath();ctx.ellipse(cx,cy+R*.22,R*1.13,R*.99,0,0,Math.PI*2);ctx.fillStyle='#1b5578';ctx.fill();
+    ctx.save();ctx.shadowColor='#17496845';ctx.shadowBlur=R*.09;ctx.shadowOffsetY=R*.055;
+    const wall=ctx.createLinearGradient(cx,cy-R*.85,cx,cy+R*1.1);wall.addColorStop(0,'#57a8cc');wall.addColorStop(.42,'#2784b4');wall.addColorStop(1,'#15557f');
+    ctx.beginPath();ctx.ellipse(cx,cy+R*.18,R*1.12,R*.94,0,0,Math.PI*2);ctx.fillStyle=wall;ctx.fill();ctx.restore();
+    const sideRim=ctx.createLinearGradient(cx,cy-R*.8,cx,cy+R*.9);sideRim.addColorStop(0,'#b4e85a');sideRim.addColorStop(.6,'#85c83e');sideRim.addColorStop(1,'#548f35');
+    ctx.beginPath();ctx.ellipse(cx,cy+R*.065,R*1.09,R*.825,0,0,Math.PI*2);ctx.fillStyle=sideRim;ctx.fill();
+    const rim=ctx.createRadialGradient(cx-R*.32,cy-R*.5,R*.13,cx,cy,R*1.12);rim.addColorStop(0,'#e6f99b');rim.addColorStop(.58,'#b9e95a');rim.addColorStop(1,'#78b83a');
+    ctx.beginPath();ctx.ellipse(cx,cy,R*1.08,R*.81,0,0,Math.PI*2);ctx.fillStyle=rim;ctx.fill();ctx.strokeStyle='#6ba83a';ctx.lineWidth=3;ctx.stroke();
+    ctx.beginPath();ctx.ellipse(cx,cy+R*.025,R*1.005,R*.75,0,0,Math.PI*2);ctx.strokeStyle='#e5f79b';ctx.lineWidth=Math.max(2,R*.018);ctx.stroke();
+    const water=ctx.createRadialGradient(cx-R*.25,cy-R*.33,R*.06,cx,cy,R*.97);water.addColorStop(0,'#91e0f0');water.addColorStop(.68,'#59badf');water.addColorStop(1,'#267eaf');
+    ctx.beginPath();ctx.ellipse(cx,cy,R*.96,R*.72,0,0,Math.PI*2);ctx.fillStyle=water;ctx.fill();ctx.strokeStyle='#237eae';ctx.lineWidth=3;ctx.stroke();
+    for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(cx,cy,R*(.28+i*.2),R*(.21+i*.16),0,0,Math.PI*2);ctx.strokeStyle=`rgba(255,255,255,${.18-i*.035})`;ctx.lineWidth=1.4;ctx.stroke();}
+    for(let i=0;i<17;i++){const a=i*2.4,rr=R*(.16+(i%5)*.145),x=cx+Math.cos(a+state.angle*.15)*rr,y=cy+Math.sin(a+state.angle*.15)*rr*planeY;ctx.beginPath();ctx.arc(x,y,2+(i%3),0,Math.PI*2);ctx.fillStyle='#d8faff70';ctx.fill();ctx.beginPath();ctx.arc(x-1,y-1,1,0,Math.PI*2);ctx.fillStyle='#ffffffaa';ctx.fill();}
+    ctx.save();ctx.translate(cx,cy);ctx.scale(1,.79);ctx.rotate(state.angle);
+    // decorative sea plants around inner rim
+    for(let i=0;i<10;i++){const a=i*Math.PI/5;ctx.save();ctx.rotate(a);ctx.translate(R*.86,0);ctx.fillStyle='#279873a8';ctx.beginPath();ctx.ellipse(0,0,R*.035,R*.095,.4,0,Math.PI*2);ctx.fill();ctx.restore();}
+    ctx.restore();
+    // center spinner sits on the tilted surface
+    ctx.save();ctx.translate(cx,cy);ctx.scale(1,.79);const spin=ctx.createRadialGradient(-R*.03,-R*.04,R*.01,0,0,R*.11);spin.addColorStop(0,'#f8ffd2');spin.addColorStop(.48,'#d8f36d');spin.addColorStop(1,'#72bd79');ctx.beginPath();ctx.arc(0,0,R*.105,0,Math.PI*2);ctx.fillStyle=spin;ctx.fill();ctx.strokeStyle='#4d9b78';ctx.lineWidth=3;ctx.stroke();ctx.beginPath();ctx.arc(0,0,R*.065,0,Math.PI*2);ctx.strokeStyle='#fff9c7';ctx.lineWidth=3;ctx.stroke();ctx.beginPath();ctx.arc(0,0,R*.025,0,Math.PI*2);ctx.fillStyle='#fffcdb';ctx.fill();ctx.restore();
+    // deep, bevelled fish wells; draw fish in depth order
+    const orderedFish=[...state.fish].sort((a,b)=>fishSlotPos(a,t).y-fishSlotPos(b,t).y);
+    for(const f of orderedFish){const p=fishSlotPos(f,t),s=R*(f.ring===0?.15:.16)*p.depthScale;ctx.beginPath();ctx.ellipse(p.x,p.y+2,s,s*.72,0,0,Math.PI*2);ctx.fillStyle='#78c94c';ctx.fill();ctx.strokeStyle='#d5f27b';ctx.lineWidth=1.4;ctx.stroke();const well=ctx.createRadialGradient(p.x-s*.28,p.y-s*.3,s*.06,p.x,p.y,s);well.addColorStop(0,'#123f67');well.addColorStop(.62,'#0c3157');well.addColorStop(1,'#071f3e');ctx.beginPath();ctx.ellipse(p.x,p.y,s*.84,s*.59,0,0,Math.PI*2);ctx.fillStyle=well;ctx.fill();ctx.strokeStyle='#69b6dc';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.ellipse(p.x-s*.05,p.y-s*.18,s*.56,s*.29,0,Math.PI,Math.PI*2);ctx.strokeStyle='#ffffff55';ctx.lineWidth=1.4;ctx.stroke();}
+    for(const f of orderedFish){if(f.caught>t||state.hookedFish?.fish===f)continue;const p=fishPos(f,t);drawFishFromHole(f,p,t,state.target===f);}
+    const basketPlayers=state.players.length?state.players:(state.mode==='duel'?[{name:'P1',color:COLORS[0]},{name:'P2',color:COLORS[1]}]:[{name:tr('you'),color:COLORS[0]}]);
+    basketPlayers.forEach((player,i)=>drawBucket(basketPoint(i),player.color,state.mode==='duel'?'P'+(i+1):'solo',t));
+    if(state.hookedFish){const hook=hookPosition(),p=carriedFishPose(state.hookedFish,hook);drawFish(state.hookedFish.fish,p,t,false,true,true);}
+    // the mouse stays on the grip; the complete rod moves with it and the line swings from the rod tip
+    const side=rodSide(),rodColor=state.players[state.turn]?.color||COLORS[0],hand=state.pointer.moved?{x:state.pointer.x,y:state.pointer.y}:defaultHand();
+    drawFishingRod(hand,rodColor,side);
+    // floating catch splashes
+    state.splashes=state.splashes.filter(s=>t-s.t<.8);for(const s of state.splashes){const q=(t-s.t)/.8;ctx.globalAlpha=1-q;ctx.fillStyle=s.color;ctx.font=`900 ${18+q*5}px system-ui`;ctx.textAlign='center';ctx.fillText(s.text,s.x,s.y-q*34);ctx.globalAlpha=1;}
+    if(state.toast&&t<state.toastUntil){ctx.font='900 13px system-ui';ctx.textAlign='center';const width=ctx.measureText(state.toast).width+26;rounded(cx-width/2,cy+R*.94,width,29,13,'#ffffffed','#d7eaf2');ctx.fillStyle='#50738a';ctx.fillText(state.toast,cx,cy+R*.94+19);}
+    ctx.restore();
+  }
+  function drawLoop(now){const t=now/1000,dt=Math.min(.05,(now-state.last)/1000);state.last=now;
+    state.angle+=dt*(state.phase==='playing'?.45:.16)*state.speed;
+    if(state.phase==='playing'){state.time-=dt;if(state.time<=0){state.time=0;finishTurn();}}
+    animateLine(dt);
+    updateHUD();draw(t);requestAnimationFrame(drawLoop);
+  }
+  requestAnimationFrame(drawLoop);
+  function nearest(x,y){let best=null,bd=Infinity;const t=performance.now()/1000;for(const f of state.fish){if(f.caught>t)continue;const p=fishPos(f,t),m=fishMouthPos(f,p,t),d=Math.hypot(m.x-x,m.y-y);if(d<bd){bd=d;best=f;}}return bd<Math.max(10,R*.055)?best:null;}
+  function hookPosition(){const side=rodSide(),hand=state.pointer.moved?state.pointer:defaultHand();return rodPose(hand,side).hook;}
+  function mouthTriangle(gape){
+    const inset=.17*gape;
+    return [[.33-inset,.04],[.85-inset,.04-.39*gape],[.85-inset,.04+.39*gape]];
+  }
+  function segmentHitsOpenMouth(f,from,to,t){
+    if(f.caught>t||!fishOpen(f,t))return false;
+    const p=fishPos(f,t),size=R*(f.ring===0?.22:.23)*p.depthScale;
+    // Invert the fish rotation and scale to use the same triangle as drawing.
+    const local=point=>[(p.y-point.y)/size,(point.x-p.x)/(size*.82)];
+    const a=local(from),b=local(to),triangle=mouthTriangle(1);
+    let enter=0,exit=1;
+    for(let i=0;i<triangle.length;i++){
+      const [x,y]=triangle[i], [nx,ny]=triangle[(i+1)%triangle.length];
+      const distance=point=>(nx-x)*(point[1]-y)-(ny-y)*(point[0]-x);
+      const start=distance(a),end=distance(b);
+      if(start<0&&end<0)return false;
+      if(start<0)enter=Math.max(enter,start/(start-end));
+      if(end<0)exit=Math.min(exit,start/(start-end));
+    }
+    return enter<=exit;
+  }
+  function tryHookOnLift(from,to,t){
+    if(!from||state.phase!=='playing'||state.hookedFish||to.y>=from.y-Math.max(1,R*.003))return false;
+    for(const f of state.fish){if(segmentHitsOpenMouth(f,from,to,t)){state.hookedFish={fish:f,player:state.turn,depthScale:fishSlotPos(f,t).depthScale};state.target=f;state.toast='';beep(780,.09);navigator.vibrate?.(65);return true;}}
+    return false;
+  }
+  function carriedFishPose(held,hook){const f=held.fish,size=R*(f.ring===0?.22:.23),depth=held.depthScale||1;return{x:hook.x-size*.04*depth*.82,y:hook.y+size*.37*depth,depthScale:depth,lift:1,scaleY:1,scaleBody:1};}
+  function dropFishIntoBucket(t){
+    const held=state.hookedFish;if(!held||state.phase!=='playing')return;
+    const bucket=basketPoint(held.player),hook=hookPosition(),p=carriedFishPose(held,hook);
+    if(Math.abs(p.x-bucket.x)>R*bucketWidth/2||p.y<bucket.y-R*bucketHeight/2||p.y>bucket.y+R*bucketHeight*.46){state.hookedFish=null;state.target=null;return false;}
+    const player=state.players[held.player];if(!player)return;
+    const streak=(player.streak||0)+1,bonus=streak%5===0?10:0;player.streak=streak;player.score+=10+bonus;
+    const label=state.mode==='duel'?'P'+(held.player+1):'solo',f=held.fish,stored={fish:f,player:label,dx:(Math.random()-.5)*R*.14,dy:(Math.random()-.5)*R*.15,startX:p.x-bucket.x,startY:p.y-bucket.y,scale:.63+Math.random()*.10,phase:Math.random()*Math.PI*2,born:t};state.bucketFish.push(stored);f.caught=Infinity;state.hookedFish=null;state.splashes.push({x:bucket.x,y:bucket.y-R*.2,t,text:bonus?'+20':'+10',color:'#fff084'});
+    beep(740,.09);return true;
+  }
+  function locate(e,canHook=false){
+    const pointer=state.pointer;
+    const from=canHook&&pointer.moved?hookPosition():null;
+    const bounds=canvas.getBoundingClientRect();
+    const x=e.clientX-bounds.left;
+    if(pointer.moved)moveLine(x-pointer.x);
+    pointer.x=x;
+    pointer.y=cy+(e.clientY-bounds.top-cy)/VIEW_TILT;
+    pointer.inside=true;
+    pointer.moved=true;
+    const hook=hookPosition(),t=performance.now()/1000;
+    state.target=nearest(hook.x,hook.y);
+    if(from)tryHookOnLift(from,hook,t);
+  }
+  let gripPointer=null;
+  canvas.addEventListener('pointermove',e=>{
+    if(gripPointer===e.pointerId)locate(e,true);
+    else if(gripPointer===null&&e.pointerType==='mouse')locate(e);
+  });
+  canvas.addEventListener('pointerleave',()=>{state.pointer.inside=false;state.target=null;});
+  canvas.addEventListener('pointerdown',e=>{
+    if(gripPointer!==null||e.button!==0)return;
+    e.preventDefault();
+    gripPointer=e.pointerId;
+    try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+    locate(e);
+    if(state.phase==='ready')startGame();
+  });
+  window.addEventListener('pointerup',e=>{
+    if(gripPointer!==e.pointerId)return;
+    gripPointer=null;
+    locate(e);
+    dropFishIntoBucket(performance.now()/1000);
+  });
+  function cancelGrip(e){
+    if(gripPointer!==e.pointerId)return;
+    gripPointer=null;
+    state.hookedFish=null;
+    state.target=null;
+  }
+  canvas.addEventListener('pointercancel',cancelGrip);
+  canvas.addEventListener('lostpointercapture',cancelGrip);
+  window.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();if(state.phase==='ready')startGame();}});
+  function toast(s){state.toast=s;state.toastUntil=performance.now()/1000+1.25;}
+  function beep(freq,duration){if(!state.sound)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!state.audio)state.audio=new AC();if(state.audio.state==='suspended')state.audio.resume();const o=state.audio.createOscillator(),g=state.audio.createGain();o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.07,state.audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,state.audio.currentTime+duration);o.connect(g);g.connect(state.audio.destination);o.start();o.stop(state.audio.currentTime+duration);}catch(_){}}
+  function stopMusic(){if(state.musicTimer){clearInterval(state.musicTimer);state.musicTimer=null;}}
+  function startMusic(){if(!state.sound||state.phase!=='playing'||state.musicTimer)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!state.audio)state.audio=new AC();if(state.audio.state==='suspended')state.audio.resume();const notes=[523,659,784,659,587,698,880,698,659,784,1046,784,698,659,587,523];let i=0;state.musicTimer=setInterval(()=>{if(!state.sound||state.phase!=='playing'){stopMusic();return;}const now=state.audio.currentTime,o=state.audio.createOscillator(),g=state.audio.createGain();o.type='triangle';o.frequency.value=notes[i++%notes.length];g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.028,now+.025);g.gain.exponentialRampToValueAtTime(.0001,now+.24);o.connect(g);g.connect(state.audio.destination);o.start(now);o.stop(now+.25);},310);}catch(_){stopMusic();}}
+  function setMode(mode){if(state.phase==='playing')return;state.mode=mode;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('selected',b.dataset.mode===mode));$('#startBtn').textContent=mode==='solo'?tr('soloStart'):tr('duelStart');updateHUD();}
+  function setSpeed(speed){state.speed=Number(speed);document.querySelectorAll('.speed-btn').forEach(b=>b.classList.toggle('selected',Number(b.dataset.speed)===state.speed));}
+  document.querySelectorAll('.mode-btn').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+  document.querySelectorAll('.speed-btn').forEach(b=>b.addEventListener('click',()=>setSpeed(b.dataset.speed)));
+  const ringSelect=$('#ringCount');
+  ringSelect.addEventListener('change',()=>{
+    state.ringCount=Number(ringSelect.value);
+    if(state.phase==='ready'){
+      state.fish=makeFish();
+      state.target=null;
+    }
+  });
+  function startGame(){state.mode=state.mode||'solo';state.players=state.mode==='solo'?[{name:tr('you'),color:COLORS[0],score:0,streak:0}]:[{name:tr('player1'),color:COLORS[0],score:0,streak:0},{name:tr('player2'),color:COLORS[1],score:0,streak:0}];state.turn=0;state.time=state.mode==='solo'?60:30;state.phase='playing';state.round=0;state.fish=makeFish();state.bucketFish=[];state.hookedFish=null;$('#startBtn').disabled=true;ringSelect.disabled=true;msg.classList.add('hidden');toast(state.mode==='solo'?tr('soloToast'):tr('duelToast'));updateHUD();startMusic();}
+  function finishTurn(){state.hookedFish=null;if(state.mode==='duel'&&state.turn===0){stopMusic();state.turn=1;state.time=30;state.phase='handoff';msgEmoji.textContent='🔄';msgTitle.textContent=tr('p2Turn');msgText.textContent=tr('handoffText');msgBtn.textContent=tr('p2Start');msgBtn.onclick=()=>{state.phase='playing';msg.classList.add('hidden');toast(tr('p2Toast'));startMusic();};msg.classList.remove('hidden');updateHUD();return;}
+    stopMusic();state.phase='finished';const win=state.players.length===1?tr('challengeDone'):state.players[0].score===state.players[1].score?tr('tie'):state.players[0].score>state.players[1].score?tr('p1Wins'):tr('p2Wins');msgEmoji.textContent=state.players.length===1?'🏆':'🎉';msgTitle.textContent=win;msgText.textContent=state.players.map(p=>`${p.name}: ${p.score} ${tr('points')}`).join('　　');msgBtn.textContent=tr('again');msgBtn.onclick=()=>startGame();msg.classList.remove('hidden');$('#startBtn').disabled=false;ringSelect.disabled=false;$('#startBtn').textContent=tr('again');const best=Math.max(...state.players.map(p=>p.score));const old=Number(localStorage.getItem('fishingBest')||0);if(best>old)localStorage.setItem('fishingBest',best);updateHUD();}
+  msgBtn.addEventListener('click',()=>{if(state.phase==='handoff'){state.phase='playing';msg.classList.add('hidden');return;}if(state.phase==='ready')startGame();else if(state.phase==='finished')startGame();});
+  $('#startBtn').addEventListener('click',()=>{if(state.phase==='finished'){startGame();return;}if(state.phase!=='playing')startGame();});
+  $('#restartBtn').addEventListener('click',()=>{stopMusic();state.phase='ready';state.players=[];state.turn=0;state.time=state.mode==='solo'?60:30;state.fish=makeFish();state.hookedFish=null;state.bucketFish=[];msgEmoji.textContent='🐠';msgTitle.textContent=tr('readyTitle');msgText.textContent=tr('readyText');msgBtn.textContent=tr('start');msgBtn.onclick=null;msg.classList.remove('hidden');$('#startBtn').disabled=false;ringSelect.disabled=false;$('#startBtn').textContent=state.mode==='solo'?tr('soloStart'):tr('duelStart');updateHUD();});
+  $('#soundBtn').addEventListener('click',e=>{state.sound=!state.sound;e.currentTarget.textContent=state.sound?tr('soundOn'):tr('soundOff');if(state.sound){beep(620,.08);startMusic();}else stopMusic();});
+  function updateHUD(){const secs=Math.ceil(state.time);$('#timer').textContent=String(secs).padStart(2,'0');$('#turnPill').textContent=state.phase==='playing'?(state.mode==='duel'?(state.turn===0?tr('player1'):tr('player2')):tr('you'))+' '+tr('turn'):state.phase==='handoff'?tr('handoff'):state.phase==='finished'?tr('finished'):tr('ready');
+    $('#bestScore').textContent=localStorage.getItem('fishingBest')||'0';const board=$('#scoreboard');const players=state.players.length?state.players:[{name:tr('you'),color:COLORS[0],score:0},...(state.mode==='duel'?[{name:tr('player2'),color:COLORS[1],score:0}]:[])];board.innerHTML=players.map((p,i)=>`<div class="score-row ${state.phase==='playing'&&i===state.turn?'active':''}"><i class="player-dot" style="--pc:${p.color}"></i><span class="player-label">${state.mode==='duel'?(i===0?tr('player1'):tr('player2')):tr('you')}</span><span class="player-points">${p.score}<small>${tr('points')}</small></span></div>`).join('');}
+
+  setMode('solo');applyLanguage();updateHUD();
+})();
+</script>
+</body>
+</html>
