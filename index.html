@@ -84,14 +84,14 @@
   function resize(){const rect=canvas.getBoundingClientRect();DPR=Math.min(devicePixelRatio||1,2);W=rect.width;H=rect.height;canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);cx=W/2;cy=H*.36;R=Math.min(W*.418,H*.429);}
   new ResizeObserver(resize).observe(canvas); resize();
   function makeFish(){let arr=[];ringLayouts[state.ringCount].forEach((ring,ri)=>{for(let i=0;i<ring.n;i++)arr.push({a:Math.PI*2*i/ring.n+(ri===0?-.18:0),r:ring.r,ring:ri,phase:Math.random()*3.4,period:3.1+Math.random()*.9,openFor:.72+Math.random()*.26,color:['#fa735c','#4aafe0','#e875a9','#f4b641','#8c78d9','#55bd82'][Math.floor(Math.random()*6)],realColor:['#d97856','#5c9b91','#c29c57','#b45f52','#7793a2','#91a860'][Math.floor(Math.random()*6)],hue:Math.floor(Math.random()*48)-24,realDirection:Math.random()<.5?-1:1,caught:0,wiggle:Math.random()*6.28,wx:0,wy:0});});const cols=Math.ceil(Math.sqrt(arr.length*1.45)),rows=Math.ceil(arr.length/cols);arr.forEach((f,i)=>{const col=i%cols,row=Math.floor(i/cols);f.wx=.08+((col+.5)/cols)*.84+(Math.random()-.5)*.045;f.wy=.08+((row+.5)/rows)*.84+(Math.random()-.5)*.05;});return arr;}
-  function fishSize(f){return R*(state.visual==='real'?.18:(f.ring===0?.22:.23));}
+  function fishSize(f){return R*(state.visual==='real'?.15:(f.ring===0?.22:.23));}
   function moveRealFish(dt,t){state.angle+=dt*(state.phase==='playing'?.45:.16)*state.speed;}
   state.fish=makeFish();
   function fishMotion(f,t){const cycle=(t*state.speed+f.phase)%f.period,up=.48,open=f.openFor,down=.5,smooth=x=>x*x*(3-2*x);let lift=0,mouth=0,mouthOpen=false;if(cycle<up){lift=smooth(cycle/up);mouth=lift;}else if(cycle<up+open){lift=1;mouth=1;mouthOpen=true;}else if(cycle<up+open+down){lift=1-smooth((cycle-up-open)/down);mouth=lift;}return{lift,mouth,mouthOpen};}
   function fishOpen(f,t){return fishMotion(f,t).mouthOpen;}
   function fishSlotPos(f,t){if(state.visual==='real'){const depthScale=.84+.18*(1-f.wy);return{x:W*f.wx,y:H*(.10+f.wy*.70),a:0,depthScale,swimDirection:f.realDirection||1};}const a=f.a+state.angle*(f.ring===1?-1.17:1),depthScale=.84+.18*((Math.sin(a)+1)/2),swimDirection=Math.cos(a)>=0?1:-1;return{x:cx+Math.cos(a)*R*f.r,y:cy+Math.sin(a)*R*f.r*.78,a,depthScale,swimDirection};}
   function fishPos(f,t){const slot=fishSlotPos(f,t),motion=fishMotion(f,t),bob=Math.sin(t*3.2*state.speed+f.wiggle)*2.5;if(state.visual==='real')return{...slot,y:slot.y+bob-motion.lift*R*.24,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:true};return{...slot,y:slot.y+bob+(1-motion.lift)*R*.06-motion.lift*R*.14,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:true};}
-  function fishMouthPos(f,p,t){const size=fishSize(f),depth=p.depthScale||1;if(state.visual==='real')return p.headUp?{x:p.x,y:p.y-size*.90*depth}:{x:p.x+(p.swimDirection||1)*size*.90*depth,y:p.y-size*.015*depth};const scaleY=(p.scaleY||1)*depth*.82,gape=fishMotion(f,t).mouth;return{x:p.x+size*.04*scaleY,y:p.y-size*(.676-.17*gape)*depth};}
+  function fishMouthPos(f,p,t){const size=fishSize(f),depth=p.depthScale||1;if(state.visual==='real')return p.headUp?{x:p.x,y:p.y-size*1.13*depth}:{x:p.x+(p.swimDirection||1)*size*1.13*depth,y:p.y-size*.015*depth};const scaleY=(p.scaleY||1)*depth*.82,gape=fishMotion(f,t).mouth;return{x:p.x+size*.04*scaleY,y:p.y-size*(.676-.17*gape)*depth};}
   function rounded(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}}
   const bucketWidth=.98,bucketHeight=.78;
   function basketPoint(index){return{x:W*.5,y:H*.94};}
@@ -154,20 +154,20 @@
   }
   function drawRealFish(f,p,t,selected,forceVisible=false,forceOpen=false){
     const size=fishSize(f),motion=fishMotion(f,t),jaw=forceOpen?1:motion.mouth,caught=!forceVisible&&f.caught>t,depth=p.depthScale||1,dir=p.swimDirection||1;
-    const imageW=size*1.65,imageH=size*2.48,mouthX=0,mouthY=-size*.90;
+    const imageW=size*2.4,imageH=size*1.2,mouthX=imageW*.47,mouthY=-imageH*.015;
     if(!forceVisible){ctx.save();ctx.translate(p.x,p.y+(p.lift||0)*R*.24);ctx.scale(depth,.22);ctx.beginPath();ctx.ellipse(0,0,size*1.05,size*.34,0,0,Math.PI*2);ctx.fillStyle='#001a2b75';ctx.fill();ctx.restore();}
-    ctx.save();ctx.translate(p.x,p.y);if(!p.headUp)ctx.rotate(Math.PI/2);ctx.scale(depth*(p.scaleBody||1),(p.scaleY||1)*depth*.9);
-    if(selected&&!caught){ctx.beginPath();ctx.ellipse(0,0,imageW*.53,imageH*.47,0,0,Math.PI*2);ctx.fillStyle='#a8f5e838';ctx.strokeStyle='#d5fff0';ctx.lineWidth=2.5;ctx.fill();ctx.stroke();}
+    ctx.save();ctx.translate(p.x,p.y);if(p.headUp)ctx.rotate(-Math.PI/2);ctx.scale((p.headUp?1:dir)*depth*(p.scaleBody||1),(p.scaleY||1)*depth*.9);
+    if(selected&&!caught){ctx.beginPath();ctx.ellipse(0,0,size*1.28,size*.68,0,0,Math.PI*2);ctx.fillStyle='#a8f5e838';ctx.strokeStyle='#d5fff0';ctx.lineWidth=2.5;ctx.fill();ctx.stroke();}
     if(caught)ctx.globalAlpha=.18;
     if(realFishImage.complete&&realFishImage.naturalWidth){ctx.filter=`hue-rotate(${f.hue||0}deg) saturate(1.08)`;ctx.drawImage(realFishImage,0,0,realFishImage.naturalWidth,realFishImage.naturalHeight,-imageW/2,-imageH/2,imageW,imageH);ctx.filter='none';}
     else{ctx.fillStyle=f.realColor;ctx.beginPath();ctx.ellipse(0,0,size*1.08,size*.5,0,0,Math.PI*2);ctx.fill();}
     ctx.globalAlpha=caught ? .18 : 1;ctx.lineJoin='round';ctx.lineCap='round';
     if(jaw>.06){
-      const gape=.28+.58*jaw;
-      ctx.beginPath();ctx.moveTo(mouthX-size*.46,mouthY-size*.12);ctx.quadraticCurveTo(mouthX-size*.22,mouthY-size*gape,mouthX,mouthY-size*gape*.9);ctx.quadraticCurveTo(mouthX+size*.22,mouthY-size*gape,mouthX+size*.46,mouthY-size*.12);ctx.quadraticCurveTo(mouthX+size*.34,mouthY+size*.20,mouthX,mouthY+size*.25);ctx.quadraticCurveTo(mouthX-size*.34,mouthY+size*.20,mouthX-size*.46,mouthY-size*.12);ctx.closePath();ctx.fillStyle='#07121b';ctx.fill();ctx.strokeStyle='#e7b78e';ctx.lineWidth=Math.max(1.8,size*.065);ctx.stroke();
-      for(const sign of [-1,1])for(let i=0;i<3;i++){const x=mouthX+sign*size*(.16+i*.085),y=mouthY-size*(.28+i*.055);ctx.beginPath();ctx.moveTo(x-size*.055,y-size*.015);ctx.lineTo(x+size*.035,y+size*.12);ctx.lineTo(x+size*.085,y-size*.02);ctx.closePath();ctx.fillStyle='#fff5dc';ctx.fill();ctx.strokeStyle='#917963';ctx.lineWidth=.8;ctx.stroke();}
+      const gape=.32+.42*jaw;
+      ctx.beginPath();ctx.moveTo(mouthX-size*.29,mouthY-size*.12);ctx.quadraticCurveTo(mouthX-size*.08,mouthY-size*gape,mouthX+size*.16,mouthY-size*gape*.62);ctx.quadraticCurveTo(mouthX+size*.34,mouthY,mouthX+size*.16,mouthY+size*gape*.62);ctx.quadraticCurveTo(mouthX-size*.08,mouthY+size*gape,mouthX-size*.29,mouthY+size*.12);ctx.quadraticCurveTo(mouthX-size*.13,mouthY,mouthX-size*.29,mouthY-size*.12);ctx.closePath();ctx.fillStyle='#07121b';ctx.fill();ctx.strokeStyle='#e7b78e';ctx.lineWidth=Math.max(1.5,size*.055);ctx.stroke();
+      for(const sign of [-1,1]){ctx.beginPath();ctx.moveTo(mouthX-size*.22,mouthY+sign*size*.34);ctx.lineTo(mouthX-size*.09,mouthY-sign*size*.055);ctx.lineTo(mouthX+size*.015,mouthY+sign*size*.27);ctx.closePath();ctx.fillStyle='#fff2de';ctx.fill();ctx.strokeStyle='#aa8c76';ctx.lineWidth=.7;ctx.stroke();}
     }else{
-      ctx.beginPath();ctx.ellipse(mouthX,mouthY,size*.23,size*.13,0,0,Math.PI*2);ctx.fillStyle='#101820';ctx.fill();ctx.strokeStyle='#d6c5ac';ctx.lineWidth=Math.max(1.5,size*.045);ctx.stroke();
+      ctx.beginPath();ctx.ellipse(mouthX,mouthY,size*.115,size*.105,0,0,Math.PI*2);ctx.fillStyle='#101820';ctx.fill();ctx.strokeStyle='#d6c5ac';ctx.lineWidth=Math.max(1.2,size*.035);ctx.stroke();
     }
     if(caught){ctx.save();ctx.globalAlpha=Math.max(.08,(f.caught-t)/.9);ctx.fillStyle='#fff';ctx.font='900 '+Math.max(14,size*.8)+'px system-ui';ctx.textAlign='center';ctx.fillText('✓',0,-size*.8);ctx.restore();}
     ctx.restore();
@@ -294,16 +294,16 @@
     updateHUD();draw(t);requestAnimationFrame(drawLoop);
   }
   requestAnimationFrame(drawLoop);
-  function nearest(x,y){let best=null,bd=Infinity;const t=performance.now()/1000;for(const f of state.fish){if(f.caught>t)continue;const p=fishPos(f,t);if(state.visual==='real'&&(fishMotion(f,t).mouth<.72||p.lift<.72))continue;const m=fishMouthPos(f,p,t),d=Math.hypot(m.x-x,m.y-y);if(d<bd){bd=d;best=f;}}const limit=state.visual==='real'&&best?Math.max(10,fishSize(best)*fishSlotPos(best,t).depthScale*.52):Math.max(10,R*.055);return bd<limit?best:null;}
+  function nearest(x,y){let best=null,bd=Infinity;const t=performance.now()/1000;for(const f of state.fish){if(f.caught>t)continue;const p=fishPos(f,t);if(state.visual==='real'&&(!fishOpen(f,t)||p.lift<.9))continue;const m=fishMouthPos(f,p,t),d=Math.hypot(m.x-x,m.y-y);if(d<bd){bd=d;best=f;}}return bd<Math.max(10,R*.055)?best:null;}
   function hookPosition(){const side=rodSide(),hand=state.pointer.moved?state.pointer:defaultHand();return rodPose(hand,side).hook;}
   function mouthTriangle(gape){
     const inset=.17*gape;
     return [[.33-inset,.04],[.85-inset,.04-.39*gape],[.85-inset,.04+.39*gape]];
   }
   function segmentHitsOpenMouth(f,from,to,t){
-    if(f.caught>t||(state.visual==='real'?(fishMotion(f,t).mouth<.72||fishPos(f,t).lift<.72):!fishOpen(f,t)))return false;
+    if(f.caught>t||!fishOpen(f,t))return false;
     const p=fishPos(f,t),size=fishSize(f)*p.depthScale;
-    if(state.visual==='real'){const m=fishMouthPos(f,p,t),dx=to.x-from.x,dy=to.y-from.y,len2=dx*dx+dy*dy||1,q=Math.max(0,Math.min(1,((m.x-from.x)*dx+(m.y-from.y)*dy)/len2)),dist=Math.hypot(from.x+q*dx-m.x,from.y+q*dy-m.y);return dist<Math.max(8,size*.52);}
+    if(state.visual==='real'){const m=fishMouthPos(f,p,t),dx=to.x-from.x,dy=to.y-from.y,len2=dx*dx+dy*dy||1,q=Math.max(0,Math.min(1,((m.x-from.x)*dx+(m.y-from.y)*dy)/len2)),dist=Math.hypot(from.x+q*dx-m.x,from.y+q*dy-m.y);return dist<Math.max(6,size*.26);}
     // Invert the fish rotation and scale to use the same triangle as drawing.
     const local=point=>[(p.y-point.y)/size,(point.x-p.x)/(size*.82)];
     const a=local(from),b=local(to),triangle=mouthTriangle(1);
@@ -323,7 +323,7 @@
     for(const f of state.fish){if(segmentHitsOpenMouth(f,from,to,t)){const slot=fishSlotPos(f,t);state.hookedFish={fish:f,player:state.turn,depthScale:slot.depthScale,swimDirection:slot.swimDirection};state.target=f;state.toast='';beep(780,.09);navigator.vibrate?.(65);return true;}}
     return false;
   }
-  function carriedFishPose(held,hook){const f=held.fish,size=fishSize(f),depth=held.depthScale||1;if(state.visual==='real')return{x:hook.x,y:hook.y+size*.90*depth,depthScale:depth,lift:1,scaleY:1,scaleBody:1,headUp:true};return{x:hook.x-size*.04*depth*.82,y:hook.y+size*.506*depth,depthScale:depth,lift:1,scaleY:1,scaleBody:1,headUp:true};}
+  function carriedFishPose(held,hook){const f=held.fish,size=fishSize(f),depth=held.depthScale||1;if(state.visual==='real')return{x:hook.x,y:hook.y+size*1.13*depth,depthScale:depth,lift:1,scaleY:1,scaleBody:1,headUp:true};return{x:hook.x-size*.04*depth*.82,y:hook.y+size*.506*depth,depthScale:depth,lift:1,scaleY:1,scaleBody:1,headUp:true};}
   function dropFishIntoBucket(t){
     const held=state.hookedFish;if(!held||state.phase!=='playing')return;
     const bucket=basketPoint(held.player),hook=hookPosition(),p=carriedFishPose(held,hook);
