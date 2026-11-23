@@ -163,9 +163,9 @@
     else{ctx.fillStyle=f.realColor;ctx.beginPath();ctx.ellipse(0,0,size*1.08,size*.5,0,0,Math.PI*2);ctx.fill();}
     ctx.globalAlpha=caught ? .18 : 1;ctx.lineJoin='round';ctx.lineCap='round';
     if(jaw>.06){
-      const gape=.18+.24*jaw;
-      ctx.beginPath();ctx.moveTo(mouthX-size*.16,mouthY-size*.07);ctx.quadraticCurveTo(mouthX-size*.02,mouthY-size*gape,mouthX+size*.11,mouthY-size*gape*.62);ctx.quadraticCurveTo(mouthX+size*.2,mouthY,mouthX+size*.11,mouthY+size*gape*.62);ctx.quadraticCurveTo(mouthX-size*.03,mouthY+size*gape,mouthX-size*.16,mouthY+size*.07);ctx.closePath();ctx.fillStyle='#07121b';ctx.fill();ctx.strokeStyle='#e7b78e';ctx.lineWidth=Math.max(1.5,size*.055);ctx.stroke();
-      for(const sign of [-1,1]){ctx.beginPath();ctx.moveTo(mouthX-size*.12,mouthY+sign*size*.065);ctx.lineTo(mouthX-size*.015,mouthY+sign*size*(.22+.12*jaw));ctx.lineTo(mouthX+size*.025,mouthY+sign*size*.04);ctx.closePath();ctx.fillStyle='#fff2de';ctx.fill();ctx.strokeStyle='#aa8c76';ctx.lineWidth=.6;ctx.stroke();}
+      const gape=.32+.42*jaw;
+      ctx.beginPath();ctx.moveTo(mouthX-size*.29,mouthY-size*.12);ctx.quadraticCurveTo(mouthX-size*.08,mouthY-size*gape,mouthX+size*.16,mouthY-size*gape*.62);ctx.quadraticCurveTo(mouthX+size*.34,mouthY,mouthX+size*.16,mouthY+size*gape*.62);ctx.quadraticCurveTo(mouthX-size*.08,mouthY+size*gape,mouthX-size*.29,mouthY+size*.12);ctx.quadraticCurveTo(mouthX-size*.13,mouthY,mouthX-size*.29,mouthY-size*.12);ctx.closePath();ctx.fillStyle='#07121b';ctx.fill();ctx.strokeStyle='#e7b78e';ctx.lineWidth=Math.max(1.5,size*.055);ctx.stroke();
+      for(const sign of [-1,1]){ctx.beginPath();ctx.moveTo(mouthX-size*.22,mouthY+sign*size*.34);ctx.lineTo(mouthX-size*.09,mouthY-sign*size*.055);ctx.lineTo(mouthX+size*.015,mouthY+sign*size*.27);ctx.closePath();ctx.fillStyle='#fff2de';ctx.fill();ctx.strokeStyle='#aa8c76';ctx.lineWidth=.7;ctx.stroke();}
     }else{
       ctx.beginPath();ctx.ellipse(mouthX,mouthY,size*.115,size*.105,0,0,Math.PI*2);ctx.fillStyle='#101820';ctx.fill();ctx.strokeStyle='#d6c5ac';ctx.lineWidth=Math.max(1.2,size*.035);ctx.stroke();
     }
