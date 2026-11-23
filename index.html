@@ -294,16 +294,16 @@
     updateHUD();draw(t);requestAnimationFrame(drawLoop);
   }
   requestAnimationFrame(drawLoop);
-  function nearest(x,y){let best=null,bd=Infinity;const t=performance.now()/1000;for(const f of state.fish){if(f.caught>t)continue;const p=fishPos(f,t);if(state.visual==='real'&&(!fishOpen(f,t)||p.lift<.9))continue;const m=fishMouthPos(f,p,t),d=Math.hypot(m.x-x,m.y-y);if(d<bd){bd=d;best=f;}}return bd<Math.max(10,R*.055)?best:null;}
+  function nearest(x,y){let best=null,bd=Infinity;const t=performance.now()/1000;for(const f of state.fish){if(f.caught>t)continue;const p=fishPos(f,t);if(state.visual==='real'&&(fishMotion(f,t).mouth<.72||p.lift<.72))continue;const m=fishMouthPos(f,p,t),d=Math.hypot(m.x-x,m.y-y);if(d<bd){bd=d;best=f;}}const limit=state.visual==='real'&&best?Math.max(10,fishSize(best)*fishSlotPos(best,t).depthScale*.52):Math.max(10,R*.055);return bd<limit?best:null;}
   function hookPosition(){const side=rodSide(),hand=state.pointer.moved?state.pointer:defaultHand();return rodPose(hand,side).hook;}
   function mouthTriangle(gape){
     const inset=.17*gape;
     return [[.33-inset,.04],[.85-inset,.04-.39*gape],[.85-inset,.04+.39*gape]];
   }
   function segmentHitsOpenMouth(f,from,to,t){
-    if(f.caught>t||!fishOpen(f,t))return false;
+    if(f.caught>t||(state.visual==='real'?(fishMotion(f,t).mouth<.72||fishPos(f,t).lift<.72):!fishOpen(f,t)))return false;
     const p=fishPos(f,t),size=fishSize(f)*p.depthScale;
-    if(state.visual==='real'){const m=fishMouthPos(f,p,t),dx=to.x-from.x,dy=to.y-from.y,len2=dx*dx+dy*dy||1,q=Math.max(0,Math.min(1,((m.x-from.x)*dx+(m.y-from.y)*dy)/len2)),dist=Math.hypot(from.x+q*dx-m.x,from.y+q*dy-m.y);return dist<Math.max(6,size*.26);}
+    if(state.visual==='real'){const m=fishMouthPos(f,p,t),dx=to.x-from.x,dy=to.y-from.y,len2=dx*dx+dy*dy||1,q=Math.max(0,Math.min(1,((m.x-from.x)*dx+(m.y-from.y)*dy)/len2)),dist=Math.hypot(from.x+q*dx-m.x,from.y+q*dy-m.y);return dist<Math.max(8,size*.52);}
     // Invert the fish rotation and scale to use the same triangle as drawing.
     const local=point=>[(p.y-point.y)/size,(point.x-p.x)/(size*.82)];
     const a=local(from),b=local(to),triangle=mouthTriangle(1);
