@@ -89,7 +89,7 @@
   state.fish=makeFish();
   function fishMotion(f,t){const cycle=(t*state.speed+f.phase)%f.period,up=.48,open=f.openFor,down=.5,smooth=x=>x*x*(3-2*x);let lift=0,mouth=0,mouthOpen=false;if(cycle<up){lift=smooth(cycle/up);mouth=lift;}else if(cycle<up+open){lift=1;mouth=1;mouthOpen=true;}else if(cycle<up+open+down){lift=1-smooth((cycle-up-open)/down);mouth=lift;}return{lift,mouth,mouthOpen};}
   function fishOpen(f,t){return fishMotion(f,t).mouthOpen;}
-  function fishSlotPos(f,t){const a=f.a+state.angle,depthScale=.84+.18*((Math.sin(a)+1)/2),swimDirection=Math.cos(a)>=0?1:-1;return{x:cx+Math.cos(a)*R*f.r,y:cy+Math.sin(a)*R*f.r*.78,a,depthScale,swimDirection};}
+  function fishSlotPos(f,t){const a=state.visual==='real'?f.a+state.angle:f.a+state.angle*(f.ring===1?-1.17:1),depthScale=.84+.18*((Math.sin(a)+1)/2),swimDirection=Math.cos(a)>=0?1:-1;return{x:cx+Math.cos(a)*R*f.r,y:cy+Math.sin(a)*R*f.r*.78,a,depthScale,swimDirection};}
   function fishPos(f,t){const slot=fishSlotPos(f,t),motion=fishMotion(f,t),bob=Math.sin(t*3.2*state.speed+f.wiggle)*2.5;if(state.visual==='real')return{...slot,y:slot.y+bob-motion.lift*R*.24,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1};return{...slot,y:slot.y+bob+(1-motion.lift)*R*.06-motion.lift*R*.14,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1};}
   function fishMouthPos(f,p,t){const size=fishSize(f),depth=p.depthScale||1;if(state.visual==='real')return{x:p.x+(p.swimDirection||1)*size*1.13*depth,y:p.y-size*.015*depth};const scaleY=(p.scaleY||1)*depth*.82;return{x:p.x+size*.04*scaleY,y:p.y-size*.37*depth};}
   function rounded(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}}
@@ -153,7 +153,7 @@
     ctx.restore();
   }
   function drawRealFish(f,p,t,selected,forceVisible=false,forceOpen=false){
-    const size=fishSize(f),motion=fishMotion(f,t),jaw=forceOpen?1:(p.lift>.16?Math.max(.84,motion.mouth):0),caught=!forceVisible&&f.caught>t,depth=p.depthScale||1,dir=p.swimDirection||1;
+    const size=fishSize(f),motion=fishMotion(f,t),jaw=forceOpen?1:motion.mouth,caught=!forceVisible&&f.caught>t,depth=p.depthScale||1,dir=p.swimDirection||1;
     const imageW=size*2.4,imageH=size*1.2,mouthX=imageW*.47,mouthY=-imageH*.015;
     if(!forceVisible){ctx.save();ctx.translate(p.x,p.y+(p.lift||0)*R*.24);ctx.scale(depth,.22);ctx.beginPath();ctx.ellipse(0,0,size*1.05,size*.34,0,0,Math.PI*2);ctx.fillStyle='#001a2b75';ctx.fill();ctx.restore();}
     ctx.save();ctx.translate(p.x,p.y);ctx.scale(dir*depth*(p.scaleBody||1),(p.scaleY||1)*depth*.9);
