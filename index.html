@@ -89,6 +89,7 @@
   state.fish=makeFish();
   function fishMotion(f,t){const cycle=(t*state.speed+f.phase)%f.period,up=.48,open=f.openFor,down=.5,smooth=x=>x*x*(3-2*x);let lift=0,mouth=0,mouthOpen=false;if(cycle<up){lift=smooth(cycle/up);mouth=lift;}else if(cycle<up+open){lift=1;mouth=1;mouthOpen=true;}else if(cycle<up+open+down){lift=1-smooth((cycle-up-open)/down);mouth=lift;}return{lift,mouth,mouthOpen};}
   function fishOpen(f,t){return fishMotion(f,t).mouthOpen;}
+  function fishHookable(f,t){const motion=fishMotion(f,t),p=fishPos(f,t);return motion.mouth>=.58&&p.lift>=.58;}
   function fishSlotPos(f,t){if(state.visual==='real'){const depthScale=.84+.18*(1-f.wy);return{x:W*f.wx,y:H*(.10+f.wy*.70),a:0,depthScale,swimDirection:f.realDirection||1};}const a=f.a+state.angle*(f.ring===1?-1.17:1),depthScale=.84+.18*((Math.sin(a)+1)/2),swimDirection=Math.cos(a)>=0?1:-1;return{x:cx+Math.cos(a)*R*f.r,y:cy+Math.sin(a)*R*f.r*.78,a,depthScale,swimDirection};}
   function fishPos(f,t){const slot=fishSlotPos(f,t),motion=fishMotion(f,t),bob=Math.sin(t*3.2*state.speed+f.wiggle)*2.5;if(state.visual==='real')return{...slot,y:slot.y+bob-motion.lift*R*.24,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:true};return{...slot,y:slot.y+bob+(1-motion.lift)*R*.06-motion.lift*R*.14,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:true};}
   function fishMouthPos(f,p,t){const size=fishSize(f),depth=p.depthScale||1;if(state.visual==='real')return p.headUp?{x:p.x,y:p.y-size*1.11*depth}:{x:p.x+(p.swimDirection||1)*size*1.11*depth,y:p.y-size*.015*depth};const scaleY=(p.scaleY||1)*depth*.82,gape=fishMotion(f,t).mouth;return{x:p.x+size*.04*scaleY,y:p.y-size*(.676-.17*gape)*depth};}
@@ -294,29 +295,18 @@
     updateHUD();draw(t);requestAnimationFrame(drawLoop);
   }
   requestAnimationFrame(drawLoop);
-  function nearest(x,y){let best=null,bd=Infinity;const t=performance.now()/1000;for(const f of state.fish){if(f.caught>t)continue;const p=fishPos(f,t);if(state.visual==='real'&&(!fishOpen(f,t)||p.lift<.9))continue;const m=fishMouthPos(f,p,t),d=Math.hypot(m.x-x,m.y-y);if(d<bd){bd=d;best=f;}}return bd<Math.max(10,R*.055)?best:null;}
+  function nearest(x,y){let best=null,bd=Infinity;const t=performance.now()/1000;for(const f of state.fish){if(f.caught>t)continue;const p=fishPos(f,t);if(state.visual==='real'&&!fishHookable(f,t))continue;const m=fishMouthPos(f,p,t),d=Math.hypot(m.x-x,m.y-y);if(d<bd){bd=d;best=f;}}const limit=best?Math.max(10,fishSize(best)*fishSlotPos(best,t).depthScale*.62):Math.max(10,R*.055);return bd<limit?best:null;}
   function hookPosition(){const side=rodSide(),hand=state.pointer.moved?state.pointer:defaultHand();return rodPose(hand,side).hook;}
   function mouthTriangle(gape){
     const inset=.17*gape;
     return [[.33-inset,.04],[.85-inset,.04-.39*gape],[.85-inset,.04+.39*gape]];
   }
   function segmentHitsOpenMouth(f,from,to,t){
-    if(f.caught>t||!fishOpen(f,t))return false;
-    const p=fishPos(f,t),size=fishSize(f)*p.depthScale;
-    if(state.visual==='real'){const m=fishMouthPos(f,p,t),dx=to.x-from.x,dy=to.y-from.y,len2=dx*dx+dy*dy||1,q=Math.max(0,Math.min(1,((m.x-from.x)*dx+(m.y-from.y)*dy)/len2)),dist=Math.hypot(from.x+q*dx-m.x,from.y+q*dy-m.y);return dist<Math.max(6,size*.26);}
-    // Invert the fish rotation and scale to use the same triangle as drawing.
-    const local=point=>[(p.y-point.y)/size,(point.x-p.x)/(size*.82)];
-    const a=local(from),b=local(to),triangle=mouthTriangle(1);
-    let enter=0,exit=1;
-    for(let i=0;i<triangle.length;i++){
-      const [x,y]=triangle[i], [nx,ny]=triangle[(i+1)%triangle.length];
-      const distance=point=>(nx-x)*(point[1]-y)-(ny-y)*(point[0]-x);
-      const start=distance(a),end=distance(b);
-      if(start<0&&end<0)return false;
-      if(start<0)enter=Math.max(enter,start/(start-end));
-      if(end<0)exit=Math.min(exit,start/(start-end));
-    }
-    return enter<=exit;
+    if(f.caught>t||!fishHookable(f,t))return false;
+    const p=fishPos(f,t),size=fishSize(f)*p.depthScale,m=fishMouthPos(f,p,t),dx=to.x-from.x,dy=to.y-from.y,len2=dx*dx+dy*dy||1;
+    const q=Math.max(0,Math.min(1,((m.x-from.x)*dx+(m.y-from.y)*dy)/len2));
+    const dist=Math.hypot(from.x+q*dx-m.x,from.y+q*dy-m.y);
+    return dist<=Math.max(10,size*.62);
   }
   function tryHookOnLift(from,to,t){
     if(!from||state.phase!=='playing'||state.hookedFish||to.y>=from.y-Math.max(1,R*.003))return false;
