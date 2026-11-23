@@ -93,8 +93,8 @@
   function fishPos(f,t){const slot=fishSlotPos(f,t),motion=fishMotion(f,t),bob=Math.sin(t*3.2*state.speed+f.wiggle)*2.5;if(state.visual==='real')return{...slot,y:slot.y+bob-motion.lift*R*.24,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:true};return{...slot,y:slot.y+bob+(1-motion.lift)*R*.06-motion.lift*R*.14,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:true};}
   function fishMouthPos(f,p,t){const size=fishSize(f),depth=p.depthScale||1;if(state.visual==='real')return p.headUp?{x:p.x,y:p.y-size*1.11*depth}:{x:p.x+(p.swimDirection||1)*size*1.11*depth,y:p.y-size*.015*depth};const scaleY=(p.scaleY||1)*depth*.82,gape=fishMotion(f,t).mouth;return{x:p.x+size*.04*scaleY,y:p.y-size*(.676-.17*gape)*depth};}
   function rounded(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}}
-  const bucketWidth=.98,bucketHeight=.78;
-  function basketPoint(index){return{x:W*.5,y:H*.94};}
+  const bucketWidth=1.55,bucketHeight=.78;
+  function basketPoint(index){return{x:cx,y:H*.94};}
   function defaultHand(){return{x:W*.84,y:H*.58};}
   function rodSide(){return state.mode==='duel'?(state.turn===0?1:-1):-1;}
   const lineSwing={angle:0,velocity:0};
@@ -132,7 +132,7 @@
     for(const item of state.bucketFish.filter(f=>f.player===label)){
       const age=Math.max(0,t-item.born),drop=Math.min(1,age/.42),ease=drop*drop*(3-2*drop),swim=Math.max(0,age-.42),x0=item.startX??item.dx,y0=item.startY??item.dy;
       const heading=swim*1.15+item.phase;
-      const swimX=item.dx+Math.sin(heading)*R*.16;
+      const swimX=item.dx+Math.sin(heading)*R*bucketWidth*.24;
       const x=drop<1?x0+(swimX-x0)*ease:swimX;
       const y=drop<1?y0+(item.dy-y0)*ease-Math.sin(drop*Math.PI)*R*.045:item.dy+Math.cos(swim*.9+item.phase)*R*.025;
       const fishPose={x:p.x+x,y:p.y+y,swimDirection:Math.sign(Math.cos(heading)),depthScale:.9,scaleBody:item.scale,scaleY:item.scale*1.28,lift:0};drawFish(item.fish,fishPose,t,false,true,false);
