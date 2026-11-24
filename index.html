@@ -72,7 +72,6 @@
   function setMessage(show){msg.hidden=!show;msg.setAttribute('aria-hidden',String(!show));msg.classList.toggle('hidden',!show);}
   function gameSpeed(){return state.speed*(state.phase==='playing'&&state.time<=10?1.6:1);}
   function fRare(f){return !!f?.rare;}
-  function beginRodReturn(){const q=state.pointer;q.returnFromX=q.x;q.returnFromY=q.y;q.returnStarted=performance.now();q.returning=true;}
   function beginCountdown(){state.phase='countdown';state.countdownUntil=performance.now()+3000;state.countdownValue=3;setMessage(false);updateHUD();}
   function updateAppearanceText(){const real=state.visual==='real';$('#subtitle').textContent=tr(real?'subtitleReal':'subtitle');$('#topNote').textContent=tr(real?'topNoteReal':'topNote');canvas.setAttribute('aria-label',tr(real?'canvasLabelReal':'canvasLabel'));$('#speedTitle').textContent=tr(real?'speedTitleReal':'speedTitle');$('#ringLabel').textContent=tr(real?'densityTitle':'ringCount');$('#ringCount').options[0].textContent=tr(real?'fewFish':'oneRing');$('#ringCount').options[1].textContent=tr(real?'someFish':'twoRings');$('#ringCount').options[2].textContent=tr(real?'manyFish':'threeRings');$('#howToText').textContent=tr(real?'howToReal':'howTo');$('#tipText').textContent=tr(real?'tipReal':'tip');}
   function applyLanguage(){document.documentElement.lang=state.lang==='en'?'en':'zh-Hant';document.title=state.lang==='en'?'Fishing Frenzy':'釣魚大作戰 | Fishing Frenzy';document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=tr(el.dataset.i18n));document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',tr(el.dataset.i18nAria)));$('#languageBtn').textContent=state.lang==='zh'?'EN':'中文';$('#musicBtn').textContent=state.music?tr('musicOn'):tr('musicOff');$('#sfxBtn').textContent=state.sfx?tr('sfxOn'):tr('sfxOff');updateAppearanceText();if(state.phase==='ready'){$('#messageTitle').textContent=tr('readyTitle');$('#messageText').textContent=tr('readyText');$('#messageBtn').textContent=tr('start');}else if(state.phase==='handoff'){$('#messageTitle').textContent=tr('p2Turn');$('#messageText').textContent=tr('handoffText');$('#messageBtn').textContent=tr('p2Start');}else if(state.phase==='finished'){const win=state.players.length===1?tr('challengeDone'):state.players[0].score===state.players[1].score?tr('tie'):state.players[0].score>state.players[1].score?tr('p1Wins'):tr('p2Wins');$('#messageTitle').textContent=win;const best=Math.max(Number(localStorage.getItem('fishingBest')||0),...state.players.map(p=>p.score));$('#messageText').textContent=state.players.map((p,i)=>`${state.mode==='duel'?(i===0?tr('player1'):tr('player2')):tr('you')}: ${p.score} ${tr('points')}`).join('　　')+`\n${tr('best')}: ${best}${state.newRecord?' · '+tr('newRecord'):''}`;$('#messageBtn').textContent=tr('again');}$('#startBtn').textContent=state.phase==='finished'?tr('again'):(state.mode==='solo'?tr('soloStart'):tr('duelStart'));updateHUD();}
@@ -102,9 +101,9 @@
   function fishMotion(f,t){const cycle=(t*gameSpeed()+f.phase)%f.period,up=.48,open=f.openFor,down=.5,smooth=x=>x*x*(3-2*x);let lift=0,mouth=0,mouthOpen=false;if(cycle<up){lift=smooth(cycle/up);mouth=lift;}else if(cycle<up+open){lift=1;mouth=1;mouthOpen=true;}else if(cycle<up+open+down){lift=1-smooth((cycle-up-open)/down);mouth=lift;}return{lift,mouth,mouthOpen};}
   function fishOpen(f,t){return fishMotion(f,t).mouthOpen;}
   function fishHookable(f,t){const motion=fishMotion(f,t),p=fishPos(f,t);return motion.mouth>=.50&&p.lift>=.50;}
-  function fishSlotPos(f,t){if(state.visual==='real'){const depthScale=.84+.18*(1-f.wy),phase=t*.32*gameSpeed()+f.phase,drift=Math.min(W*.018,R*.10),x=Math.max(R*.34,Math.min(W-R*.34,W*f.wx+Math.sin(phase)*drift)),y=H*(.12+f.wy*.68)+Math.sin(phase*.72)*H*.006;let swimDirection=Math.cos(phase)>=0?1:-1;if(state.pointer.moved){const hook=hookPosition();if(Math.hypot(hook.x-x,hook.y-y)<R*.78)swimDirection=hook.x>=x?1:-1;}return{x,y,a:0,depthScale,swimDirection};}const a=f.a+state.angle*(f.ring===1?-1.17:1),depthScale=.84+.18*((Math.sin(a)+1)/2),swimDirection=Math.cos(a)>=0?1:-1;return{x:cx+Math.cos(a)*R*f.r,y:cy+Math.sin(a)*R*f.r*.78,a,depthScale,swimDirection};}
-  function fishPos(f,t){const slot=fishSlotPos(f,t),motion=fishMotion(f,t),bob=Math.sin(t*3.2*gameSpeed()+f.wiggle)*2.5;if(state.visual==='real')return{...slot,y:slot.y+bob-motion.lift*R*.24,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:false};return{...slot,y:slot.y+bob+(1-motion.lift)*R*.06-motion.lift*R*.14,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:true};}
-  function fishMouthPos(f,p,t){const size=fishSize(f),depth=p.depthScale||1;if(state.visual==='real')return p.headUp?{x:p.x+size*.036*depth,y:p.y-size*1.11*depth}:{x:p.x+(p.swimDirection||1)*size*1.11*depth,y:p.y+size*.036*depth};const scaleY=(p.scaleY||1)*depth*.82,gape=fishMotion(f,t).mouth;return{x:p.x+size*.04*scaleY,y:p.y-size*(.676-.17*gape)*depth};}
+  function fishSlotPos(f,t){if(state.visual==='real'){const depthScale=.84+.18*(1-f.wy),phase=t*.32*gameSpeed()+f.phase,drift=Math.min(W*.018,R*.10),x=Math.max(R*.34,Math.min(W-R*.34,W*f.wx+Math.sin(phase)*drift)),y=H*(.12+f.wy*.68)+Math.sin(phase*.72)*H*.006;return{x,y,a:0,depthScale,swimDirection:1};}const a=f.a+state.angle*(f.ring===1?-1.17:1),depthScale=.84+.18*((Math.sin(a)+1)/2),swimDirection=Math.cos(a)>=0?1:-1;return{x:cx+Math.cos(a)*R*f.r,y:cy+Math.sin(a)*R*f.r*.78,a,depthScale,swimDirection};}
+  function fishPos(f,t){const slot=fishSlotPos(f,t),motion=fishMotion(f,t),bob=Math.sin(t*3.2*gameSpeed()+f.wiggle)*2.5;if(state.visual==='real')return{...slot,y:slot.y+bob-motion.lift*R*.24,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:true};return{...slot,y:slot.y+bob+(1-motion.lift)*R*.06-motion.lift*R*.14,lift:motion.lift,mouth:motion.mouth,scaleY:1,scaleBody:1,headUp:true};}
+  function fishMouthPos(f,p,t){const size=fishSize(f),depth=p.depthScale||1;if(state.visual==='real'){const lengths=[2.6,2.35,2.85,2.55,2.75],mouthOffset=size*(lengths[f.species||0]*.37+.15)*depth*.9;return{x:p.x,y:p.y-mouthOffset};}const scaleY=(p.scaleY||1)*depth*.82,gape=fishMotion(f,t).mouth;return{x:p.x+size*.04*scaleY,y:p.y-size*(.676-.17*gape)*depth};}
   function rounded(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}}
   const bucketWidth=1.55,bucketHeight=.78;
   function basketPoint(index){return{x:cx,y:H*.81};}
@@ -165,11 +164,24 @@
     }
     ctx.restore();
   }
+  function drawNaturalFishMouth(f,gape,size){
+    // The throat is a softly shaded oval wedge; lips meet at the corners and part smoothly while the fish gulps.
+    const open=Math.max(0,Math.min(1,gape)),half=.145*open;
+    ctx.save();ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(size*.14,-size*half*1.18,size*.31,-size*half*.52);ctx.quadraticCurveTo(size*.37,0,size*.31,size*half*.52);ctx.quadraticCurveTo(size*.14,size*half*1.18,0,0);ctx.closePath();
+    const throat=ctx.createLinearGradient(0,-size*.15,0,size*.15);throat.addColorStop(0,'#21151a');throat.addColorStop(.42,'#080d12');throat.addColorStop(1,'#39232a');ctx.fillStyle=throat;ctx.fill();
+    if(open>.08){ctx.save();ctx.globalAlpha=.22*open;const inner=ctx.createRadialGradient(size*.20,-size*.025,0,size*.20,0,size*.17);inner.addColorStop(0,'#fff1cf');inner.addColorStop(1,'#8f6556');ctx.fillStyle=inner;ctx.fill();ctx.restore();}
+    const lip=ctx.createLinearGradient(0,-size*.1,size*.25,size*.12);lip.addColorStop(0,'#f5d0a0');lip.addColorStop(.38,f.realColor||'#b97854');lip.addColorStop(1,'#755046');
+    ctx.strokeStyle=lip;ctx.lineWidth=Math.max(1.6,size*(.038+.018*open));ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(size*.15,-size*half*1.38,size*.31,-size*half*.52);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(size*.15,size*half*1.38,size*.31,size*half*.52);ctx.stroke();
+    ctx.strokeStyle='#fff1d17a';ctx.lineWidth=Math.max(.8,size*.014);ctx.beginPath();ctx.moveTo(size*.018,-size*.012);ctx.quadraticCurveTo(size*.14,-size*half*1.08,size*.29,-size*half*.48);ctx.stroke();
+    ctx.restore();
+  }
   function drawRealFish(f,p,t,selected,forceVisible=false,forceOpen=false){
-    const size=fishSize(f),motion=fishMotion(f,t),jaw=forceOpen?1:motion.mouth,caught=!forceVisible&&f.caught>t,depth=p.depthScale||1,dir=p.swimDirection||f.realDirection||1;
+    const size=fishSize(f),motion=fishMotion(f,t),jaw=forceOpen?1:motion.mouth,caught=!forceVisible&&f.caught>t,depth=p.depthScale||1;
     const lengths=[2.6,2.35,2.85,2.55,2.75],heights=[1.48,1.78,1.36,1.62,1.52],imageW=size*lengths[f.species||0],imageH=size*heights[f.species||0];
     if(!forceVisible){ctx.save();ctx.translate(p.x,p.y+(p.lift||0)*R*.24);ctx.scale(depth,.22);ctx.beginPath();ctx.ellipse(0,0,size*1.05,size*.34,0,0,Math.PI*2);ctx.fillStyle='#001a2b75';ctx.fill();ctx.restore();}
-    ctx.save();ctx.translate(p.x,p.y);ctx.scale(dir*depth*(p.scaleBody||1),(p.scaleY||1)*depth*.9);
+    const inBucket=f.caught===Infinity,dir=p.swimDirection||1;ctx.save();ctx.translate(p.x,p.y);if(!inBucket)ctx.rotate(-Math.PI/2);ctx.scale((inBucket?dir:1)*depth*(p.scaleBody||1),(p.scaleY||1)*depth*.9);
     if(selected&&!caught){ctx.beginPath();ctx.ellipse(0,0,imageW*.57,imageH*.62,0,0,Math.PI*2);ctx.fillStyle='#a8f5e828';ctx.strokeStyle='#d5fff0';ctx.lineWidth=2.5;ctx.fill();ctx.stroke();}
     if(f.rare&&!caught){ctx.save();ctx.shadowColor='#ffe36b';ctx.shadowBlur=size*.45;ctx.beginPath();ctx.ellipse(0,0,imageW*.50,imageH*.52,0,0,Math.PI*2);ctx.strokeStyle='#ffe36b99';ctx.lineWidth=Math.max(2,size*.035);ctx.stroke();ctx.restore();}
     if(caught)ctx.globalAlpha=.18;
@@ -177,11 +189,8 @@
     else{ctx.fillStyle=f.rare?'#f1b936':f.realColor;ctx.beginPath();ctx.ellipse(0,0,imageW*.46,imageH*.44,0,0,Math.PI*2);ctx.fill();}
     // Species markings and colour vary each fish while the side-profile asset stays recognizable.
     if(f.species===1||f.species===3){ctx.strokeStyle=f.rare?'#ffeeb0aa':'#f5fff466';ctx.lineWidth=Math.max(1,size*.025);for(let i=0;i<3;i++){const x=-size*.32+i*size*.22;ctx.beginPath();ctx.moveTo(x,-imageH*.22);ctx.quadraticCurveTo(x+size*.12,0,x,imageH*.22);ctx.stroke();}}
-    ctx.globalAlpha=caught?.18:1;ctx.lineJoin='round';ctx.lineCap='round';ctx.save();ctx.translate(size*.52,0);
-    const gape=jaw,mouth=mouthTriangle(gape);ctx.beginPath();ctx.moveTo(mouth[0][0]*size,mouth[0][1]*size);for(const [x,y] of mouth.slice(1))ctx.lineTo(x*size,y*size);if(gape>0)ctx.closePath();ctx.fillStyle='#241326';ctx.fill();ctx.strokeStyle=gape>.08?'#ffd7aa':'#765c51';ctx.lineWidth=Math.max(1.4,size*.03);ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();
-    if(gape>.08){ctx.fillStyle='#fff8e5';for(const side of [-1,1])for(const position of [.46,.69,.89]){const x=mouth[0][0]+(mouth[1][0]-mouth[0][0])*position,y=.04+side*.39*gape*position;ctx.beginPath();ctx.moveTo((x-.049)*size,(y-side*.034*gape)*size);ctx.lineTo((x+.049)*size,(y+side*.034*gape)*size);ctx.lineTo(x*size,(y-side*(position===.89?.23:.17)*gape)*size);ctx.closePath();ctx.fill();}}
-    if(gape>.08){const pulse=.78+Math.sin(t*12)*.12;ctx.beginPath();ctx.arc(size*.62,size*.036,size*(.16+.12*gape),0,Math.PI*2);ctx.strokeStyle=`rgba(185,255,238,${pulse*gape})`;ctx.lineWidth=Math.max(2,size*.045);ctx.shadowColor='#9cffeb';ctx.shadowBlur=size*.28;ctx.stroke();ctx.shadowBlur=0;}
-    ctx.restore();if(f.rare&&!caught){ctx.fillStyle='#fff0a3';ctx.font=`${Math.max(10,size*.34)}px system-ui`;ctx.fillText('✦',-imageW*.43,-imageH*.34);}if(caught){ctx.save();ctx.globalAlpha=Math.max(.08,(f.caught-t)/.9);ctx.fillStyle='#fff';ctx.font='900 '+Math.max(14,size*.8)+'px system-ui';ctx.textAlign='center';ctx.fillText('✓',imageW*.36,0);ctx.restore();}ctx.restore();
+    ctx.globalAlpha=caught?.18:1;ctx.save();ctx.translate(imageW*.37,0);drawNaturalFishMouth(f,jaw,size);ctx.restore();
+    if(f.rare&&!caught){ctx.fillStyle='#fff0a3';ctx.font=`${Math.max(10,size*.34)}px system-ui`;ctx.fillText('✦',-imageW*.43,-imageH*.34);}if(caught){ctx.save();ctx.globalAlpha=Math.max(.08,(f.caught-t)/.9);ctx.fillStyle='#fff';ctx.font='900 '+Math.max(14,size*.8)+'px system-ui';ctx.textAlign='center';ctx.fillText('✓',imageW*.36,0);ctx.restore();}ctx.restore();
   }
   function drawFish(f,p,t,selected,forceVisible=false,forceOpen=false){
     if(state.visual==='real'){drawRealFish(f,p,t,selected,forceVisible,forceOpen);return;}
@@ -306,7 +315,6 @@
     state.angle+=dt*(state.phase==='playing'?.45:.16)*gameSpeed();
     if(state.phase==='playing'){state.time-=dt;if(state.time<=0){state.time=0;finishTurn();}}
     if(state.phase==='countdown'){const left=state.countdownUntil-now;state.countdownValue=Math.max(1,Math.ceil(left/1000));if(left<=0){state.phase='playing';state.countdownValue=0;toast(state.showFirstTutorial?tr('firstLesson'):(state.turn===0?tr('duelToast'):tr('p2Toast')),state.showFirstTutorial?3.6:1.25);state.showFirstTutorial=false;startMusic();}}
-    const pointer=state.pointer;if(pointer.returning){const q=Math.max(0,Math.min(1,(now-pointer.returnStarted)/420)),ease=1-Math.pow(1-q,3),home=defaultHand();pointer.x=pointer.returnFromX+(home.x-pointer.returnFromX)*ease;pointer.y=pointer.returnFromY+(home.y-pointer.returnFromY)*ease;if(q>=1){pointer.returning=false;pointer.moved=false;pointer.inside=false;state.target=null;}}
     animateLine(dt);
     updateHUD();draw(t);requestAnimationFrame(drawLoop);
   }
@@ -331,7 +339,7 @@
     for(const f of state.fish){if(segmentHitsOpenMouth(f,from,to,t)){const slot=fishSlotPos(f,t);state.hookedFish={fish:f,player:state.turn,depthScale:slot.depthScale,swimDirection:slot.swimDirection};state.target=f;state.hookGlowUntil=t+.6;state.toast='';beep(780,.09);if(state.sfx)navigator.vibrate?.([45,25,55]);return true;}}
     return false;
   }
-  function carriedFishPose(held,hook){const f=held.fish,size=fishSize(f),depth=held.depthScale||1;if(state.visual==='real')return{x:hook.x-(held.swimDirection||1)*size*1.11*depth,y:hook.y-size*.036*depth,depthScale:depth,lift:1,scaleY:1,scaleBody:1,headUp:false,swimDirection:held.swimDirection||1};return{x:hook.x-size*.04*depth*.82,y:hook.y+size*.506*depth,depthScale:depth,lift:1,scaleY:1,scaleBody:1,headUp:true};}
+  function carriedFishPose(held,hook){const f=held.fish,size=fishSize(f),depth=held.depthScale||1;if(state.visual==='real'){const lengths=[2.6,2.35,2.85,2.55,2.75],mouthOffset=size*(lengths[f.species||0]*.37+.15)*depth*.9;return{x:hook.x,y:hook.y+mouthOffset,depthScale:depth,lift:1,scaleY:1,scaleBody:1,headUp:true,swimDirection:1};}return{x:hook.x-size*.04*depth*.82,y:hook.y+size*.506*depth,depthScale:depth,lift:1,scaleY:1,scaleBody:1,headUp:true};}
   function dropFishIntoBucket(t){
     const held=state.hookedFish;if(!held||state.phase!=='playing')return;
     const bucket=basketPoint(held.player),hook=hookPosition(),p=carriedFishPose(held,hook);
@@ -376,14 +384,12 @@
     locate(e);
     const t=performance.now()/1000,hook=hookPosition(),lift=(state.pointer.downY||state.pointer.y)-state.pointer.y,wasHooked=!!state.hookedFish;
     if(wasHooked){const scored=dropFishIntoBucket(t);if(!scored&&state.players[state.turn])state.players[state.turn].streak=0;}else if(state.phase==='playing'&&lift>8){const near=closestMouth(hook.x,hook.y,t);toast(near&&!fishHookable(near.f,t)?tr('tooEarly'):tr('missed'));if(state.players[state.turn])state.players[state.turn].streak=0;}
-    beginRodReturn();
   });
   function cancelGrip(e){
     if(gripPointer!==e.pointerId)return;
     gripPointer=null;
     state.hookedFish=null;
     state.target=null;
-    beginRodReturn();
   }
   canvas.addEventListener('pointercancel',cancelGrip);
   canvas.addEventListener('lostpointercapture',cancelGrip);
