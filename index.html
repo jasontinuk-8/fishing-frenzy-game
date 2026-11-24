@@ -115,7 +115,7 @@
       }
     }
   }
-  function rodPose(hand,side){const norm=Math.hypot(.70,.714),ux=side*.70/norm,uy=-.714/norm,shaftLen=R*.91,tip={x:hand.x+ux*shaftLen,y:hand.y+uy*shaftLen},hook={x:tip.x+Math.sin(lineSwing.angle)*R*.73,y:tip.y+Math.cos(lineSwing.angle)*R*.73};return{ux,uy,tip,hook};}
+  function rodPose(hand,side){const norm=Math.hypot(.70,.714),ux=side*.70/norm,uy=-.714/norm,shaftLen=R*.91,tip={x:hand.x+ux*shaftLen,y:hand.y+uy*shaftLen},hook={x:tip.x+Math.sin(lineSwing.angle)*R*.73,y:tip.y+Math.cos(lineSwing.angle)*R*1.05};return{ux,uy,tip,hook};}
   function drawRealOcean(t){
     ctx.fillStyle='#07516b';ctx.fillRect(0,0,W,H);
     if(realOceanImage.complete&&realOceanImage.naturalWidth){const scale=Math.max(W/realOceanImage.naturalWidth,H/realOceanImage.naturalHeight),w=realOceanImage.naturalWidth*scale,h=realOceanImage.naturalHeight*scale;ctx.drawImage(realOceanImage,(W-w)/2,(H-h)/2,w,h);}
@@ -243,7 +243,7 @@
     ctx.translate(hook.x,hook.y);
     ctx.rotate(-lineSwing.angle);
     ctx.translate(-hook.x,-hook.y);
-    const hookSize=Math.max(8,R*.055);ctx.beginPath();ctx.moveTo(hook.x,hook.y-hookSize*.35);ctx.lineTo(hook.x,hook.y+hookSize*.28);ctx.quadraticCurveTo(hook.x+hookSize*.08,hook.y+hookSize*.75,hook.x+hookSize*.43,hook.y+hookSize*.59);ctx.quadraticCurveTo(hook.x+hookSize*.65,hook.y+hookSize*.49,hook.x+hookSize*.55,hook.y+hookSize*.28);ctx.strokeStyle='#17212a';ctx.lineWidth=4;ctx.stroke();ctx.beginPath();ctx.moveTo(hook.x,hook.y-hookSize*.35);ctx.lineTo(hook.x,hook.y+hookSize*.28);ctx.quadraticCurveTo(hook.x+hookSize*.08,hook.y+hookSize*.75,hook.x+hookSize*.43,hook.y+hookSize*.59);ctx.quadraticCurveTo(hook.x+hookSize*.65,hook.y+hookSize*.49,hook.x+hookSize*.55,hook.y+hookSize*.28);ctx.strokeStyle='#eaf1f5';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+    const hookSize=Math.max(8,R*.055);ctx.beginPath();ctx.moveTo(hook.x,hook.y);ctx.lineTo(hook.x,hook.y+hookSize*.63);ctx.quadraticCurveTo(hook.x+hookSize*.08,hook.y+hookSize*1.10,hook.x+hookSize*.43,hook.y+hookSize*.85);ctx.quadraticCurveTo(hook.x+hookSize*.65,hook.y+hookSize*.75,hook.x+hookSize*.55,hook.y+hookSize*.55);ctx.strokeStyle='#17212a';ctx.lineWidth=4;ctx.stroke();ctx.beginPath();ctx.moveTo(hook.x,hook.y);ctx.lineTo(hook.x,hook.y+hookSize*.63);ctx.quadraticCurveTo(hook.x+hookSize*.08,hook.y+hookSize*1.10,hook.x+hookSize*.43,hook.y+hookSize*.85);ctx.quadraticCurveTo(hook.x+hookSize*.65,hook.y+hookSize*.75,hook.x+hookSize*.55,hook.y+hookSize*.55);ctx.strokeStyle='#eaf1f5';ctx.lineWidth=2;ctx.stroke();ctx.restore();
 
   }
   function draw(t){ctx.clearRect(0,0,W,H);if(state.visual==='real')drawRealOcean(t);ctx.save();ctx.translate(0,cy);ctx.scale(1,VIEW_TILT);ctx.translate(0,-cy);
