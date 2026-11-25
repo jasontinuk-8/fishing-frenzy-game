@@ -94,12 +94,12 @@
   }
   function fishSize(f){if(state.visual==='real')return R*.18;return R*(f.ring===0?.22:.23);}
   const realFishShapes=[
-    {name:'carp',w:2.16,h:2.95,head:.68,type:'carp'},
-    {name:'piranha',w:2.38,h:2.72,head:.76,type:'piranha'},
-    {name:'grouper',w:2.58,h:2.72,head:.72,type:'grouper'},
-    {name:'catfish',w:1.78,h:3.12,head:.64,type:'catfish'},
-    {name:'pufferfish',w:2.48,h:2.52,head:.60,type:'puffer'},
-    {name:'anglerfish',w:2.62,h:2.86,head:.76,type:'angler'}
+    {name:'carp',w:1.92,h:3.18,head:.68,type:'carp'},
+    {name:'piranha',w:2.20,h:2.94,head:.76,type:'piranha'},
+    {name:'grouper',w:2.36,h:2.86,head:.72,type:'grouper'},
+    {name:'catfish',w:1.52,h:3.38,head:.64,type:'catfish'},
+    {name:'pufferfish',w:2.32,h:2.54,head:.60,type:'puffer'},
+    {name:'anglerfish',w:2.42,h:3.02,head:.76,type:'angler'}
   ];
   function realFishShape(f){return realFishShapes[f.species||0];}
   function realFishMouthOffset(f,depth=1){return fishSize(f)*realFishShape(f).h*.455*depth*.9;}
@@ -191,7 +191,7 @@
     else{ctx.moveTo(-w*.12,h*.37);ctx.lineTo(-w*.46,h*.68);ctx.quadraticCurveTo(-w*.24,h*.54,0,h*.58);ctx.quadraticCurveTo(w*.24,h*.54,w*.46,h*.68);ctx.lineTo(w*.12,h*.37);}
     ctx.closePath();ctx.fill();ctx.stroke();
     // Pectoral fins and dorsal-fin silhouette vary by species.
-    for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(side*w*.28,-h*.02);ctx.quadraticCurveTo(side*w*(f.species===2?.65:.57),h*.02,side*w*.49,h*.24);ctx.quadraticCurveTo(side*w*.30,h*.19,side*w*.19,h*.12);ctx.closePath();ctx.fill();ctx.stroke();}
+    for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(side*w*.28,-h*.02);ctx.quadraticCurveTo(side*w*(f.species===2?.72:.66),h*.02,side*w*.49,h*.24);ctx.quadraticCurveTo(side*w*.30,h*.19,side*w*.19,h*.12);ctx.closePath();ctx.fill();ctx.stroke();}
     ctx.beginPath();
     if(f.species===0){ctx.moveTo(-w*.30,-h*.04);ctx.quadraticCurveTo(-w*.48,-h*.24,-w*.26,-h*.35);ctx.lineTo(-w*.08,-h*.13);}
     else if(f.species===1){ctx.moveTo(-w*.31,-h*.05);ctx.lineTo(-w*.35,-h*.22);ctx.lineTo(-w*.24,-h*.18);ctx.lineTo(-w*.18,-h*.34);ctx.lineTo(-w*.08,-h*.16);ctx.lineTo(w*.02,-h*.27);ctx.lineTo(w*.11,-h*.10);}
@@ -211,14 +211,14 @@
       ctx.closePath();};
     traceBody();ctx.fillStyle=bodyGrad;ctx.fill();ctx.strokeStyle='#203943';ctx.lineWidth=Math.max(1.6,size*.06);ctx.stroke();
     // Fine scale arcs are clipped to the fish body for depth, not printed as flat stripes.
-    if(f.species!==4){ctx.save();traceBody();ctx.clip();ctx.strokeStyle='#fff0c54c';ctx.lineWidth=Math.max(.65,size*.014);for(let row=0;row<6;row++)for(let col=-2;col<=2;col++){const x=col*w*.135+(row%2)*w*.065,y=-h*.23+row*h*.085;ctx.beginPath();ctx.arc(x,y,size*.075,Math.PI*.12,Math.PI*.88);ctx.stroke();}ctx.restore();}
+    if(f.species!==4){ctx.save();traceBody();ctx.clip();ctx.strokeStyle='#fff0c57a';ctx.lineWidth=Math.max(.9,size*.019);for(let row=0;row<6;row++)for(let col=-2;col<=2;col++){const x=col*w*.135+(row%2)*w*.065,y=-h*.23+row*h*.085;ctx.beginPath();ctx.arc(x,y,size*.075,Math.PI*.12,Math.PI*.88);ctx.stroke();}ctx.restore();}
     if(f.species===4){ctx.save();ctx.strokeStyle='#e7d9bd';ctx.lineWidth=Math.max(1.5,size*.035);for(let i=0;i<18;i++){const a=-Math.PI/2+i*Math.PI*2/18,x=Math.cos(a)*w*.45,y=Math.sin(a)*h*.43;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*size*.18,y+Math.sin(a)*size*.18);ctx.stroke();}ctx.restore();}
     if(f.species===5){ctx.save();ctx.shadowColor='#ffd06a';ctx.shadowBlur=size*.26;ctx.strokeStyle='#d6b27d';ctx.lineWidth=Math.max(1.7,size*.045);ctx.beginPath();ctx.moveTo(w*.18,-h*.38);ctx.quadraticCurveTo(w*.48,-h*.65,w*.29,-h*.83);ctx.stroke();ctx.beginPath();ctx.arc(w*.29,-h*.84,size*.075,0,Math.PI*2);ctx.fillStyle='#f7d77b';ctx.fill();ctx.stroke();ctx.restore();}
     // Paired eyes and curved gill covers make the fish face and anatomy readable.
-    for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(side*w*.20,-h*.20);ctx.quadraticCurveTo(side*w*.37,-h*.06,side*w*.25,h*.16);ctx.strokeStyle='#263d43bd';ctx.lineWidth=Math.max(1.4,size*.045);ctx.stroke();}
-    for(const side of [-1,1]){const ex=side*w*(f.species===3?.19:.28),ey=-h*.29,er=size*(f.species===4?.12:.092);ctx.beginPath();ctx.arc(ex,ey,er,0,Math.PI*2);ctx.fillStyle='#fff1d0';ctx.fill();ctx.strokeStyle='#24363d';ctx.lineWidth=Math.max(1.2,size*.045);ctx.stroke();ctx.beginPath();ctx.arc(ex,ey,er*.57,0,Math.PI*2);ctx.fillStyle='#17242a';ctx.fill();ctx.beginPath();ctx.arc(ex-er*.17,ey-er*.20,er*.22,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();}
+    ctx.beginPath();ctx.moveTo(-w*.08,-h*.20);ctx.quadraticCurveTo(-w*.18,-h*.04,-w*.12,h*.14);ctx.strokeStyle='#34505775';ctx.lineWidth=Math.max(1,size*.035);ctx.stroke();ctx.beginPath();ctx.moveTo(w*.19,-h*.20);ctx.quadraticCurveTo(w*.37,-h*.06,w*.25,h*.16);ctx.strokeStyle='#172f38e8';ctx.lineWidth=Math.max(1.7,size*.058);ctx.stroke();
+    for(const eye of [{x:-w*.075,scale:.58},{x:w*(f.species===3?.19:.28),scale:1}]){const ex=eye.x,ey=-h*.29,er=size*(f.species===4?.145:.12)*eye.scale;ctx.beginPath();ctx.arc(ex,ey,er,0,Math.PI*2);ctx.fillStyle=eye.scale<1?'#d9c9a8':'#fff1d0';ctx.fill();ctx.strokeStyle='#24363d';ctx.lineWidth=Math.max(1.2,size*.045);ctx.stroke();ctx.beginPath();ctx.arc(ex+er*.08,ey,er*.57,0,Math.PI*2);ctx.fillStyle='#17242a';ctx.fill();ctx.beginPath();ctx.arc(ex-er*.08,ey-er*.20,er*.22,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();}
     // Piranha underbite and catfish whiskers frame the large front-facing gape.
-    const headW=w*shape.head,mouthW=headW*.88,mouthY=-h*.455,gapeH=headW*(.025+.56*open);
+    const headW=w*shape.head,mouthW=headW*.88,mouthY=-h*.455,gapeH=headW*(.025+.65*open);
     if(f.species===1){ctx.beginPath();ctx.moveTo(-mouthW*.40,mouthY+gapeH*.38);ctx.quadraticCurveTo(0,mouthY+gapeH*.90,mouthW*.40,mouthY+gapeH*.38);ctx.strokeStyle='#ba4b3d';ctx.lineWidth=Math.max(2,size*.10);ctx.stroke();}
     if(f.species===3){ctx.strokeStyle='#e8d3aa';ctx.lineWidth=Math.max(1.5,size*.035);for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(side*mouthW*.34,mouthY+gapeH*.10);ctx.quadraticCurveTo(side*mouthW*.82,mouthY-gapeH*.2,side*mouthW*.72,mouthY-gapeH*.82);ctx.stroke();}}
     ctx.save();ctx.translate(0,mouthY);
@@ -226,8 +226,8 @@
     ctx.beginPath();ctx.moveTo(-mouthW*.5,0);ctx.quadraticCurveTo(-mouthW*.38,-gapeH*.58,0,-gapeH*.50);ctx.quadraticCurveTo(mouthW*.38,-gapeH*.58,mouthW*.5,0);ctx.quadraticCurveTo(mouthW*.38,gapeH*.58,0,gapeH*.50);ctx.quadraticCurveTo(-mouthW*.38,gapeH*.58,-mouthW*.5,0);ctx.closePath();
     const throat=ctx.createRadialGradient(0,-gapeH*.1,Math.max(1,size*.01),0,0,mouthW*.58);throat.addColorStop(0,'#03070b');throat.addColorStop(.58,'#170c12');throat.addColorStop(1,'#55202b');ctx.fillStyle=throat;ctx.fill();
     ctx.strokeStyle='#a52e3b';ctx.lineWidth=Math.max(2,size*.095);ctx.stroke();
-    ctx.strokeStyle='#f08a75';ctx.lineWidth=Math.max(1,size*.035);ctx.beginPath();ctx.ellipse(0,0,mouthW*.48,gapeH*.47,0,Math.PI,Math.PI*2);ctx.stroke();
-    if(open>.08){const toothRows=f.species===1||f.species===5?7:6,tw=mouthW/toothRows*.57,th=Math.min(gapeH*.44,headW*.16);for(const row of [-1,1])for(let i=0;i<toothRows;i++){const x=((i+.5)/toothRows-.5)*mouthW*.84,y=row<0?-gapeH*.34:gapeH*.34;ctx.beginPath();if(row<0){ctx.moveTo(x-tw/2,y);ctx.lineTo(x+tw/2,y);ctx.lineTo(x,y+th);}else{ctx.moveTo(x-tw/2,y);ctx.lineTo(x,y-th);ctx.lineTo(x+tw/2,y);}ctx.closePath();const tooth=ctx.createLinearGradient(x,y-th,x,y+th);tooth.addColorStop(0,'#fff9df');tooth.addColorStop(1,'#d9c9a5');ctx.fillStyle=tooth;ctx.fill();ctx.strokeStyle='#715854';ctx.lineWidth=Math.max(.7,size*.018);ctx.stroke();}}
+    ctx.strokeStyle='#f08a75';ctx.lineWidth=Math.max(1.2,size*.045);ctx.beginPath();ctx.ellipse(0,0,mouthW*.46,gapeH*.42,0,Math.PI,Math.PI*2);ctx.stroke();ctx.strokeStyle='#cf4550';ctx.lineWidth=Math.max(1.5,size*.06);ctx.beginPath();ctx.ellipse(0,gapeH*.04,mouthW*.45,gapeH*.40,0,0,Math.PI);ctx.stroke();
+    if(open>.08){const toothRows=f.species===1?6:f.species===5?5:4,tw=mouthW/toothRows*.68,th=Math.min(gapeH*.52,headW*.19);for(const row of [-1,1])for(let i=0;i<toothRows;i++){const x=((i+.5)/toothRows-.5)*mouthW*.84,y=row<0?-gapeH*.34:gapeH*.34;ctx.beginPath();if(row<0){ctx.moveTo(x-tw/2,y);ctx.lineTo(x+tw/2,y);ctx.lineTo(x,y+th);}else{ctx.moveTo(x-tw/2,y);ctx.lineTo(x,y-th);ctx.lineTo(x+tw/2,y);}ctx.closePath();const tooth=ctx.createLinearGradient(x,y-th,x,y+th);tooth.addColorStop(0,'#fff9df');tooth.addColorStop(1,'#d9c9a5');ctx.fillStyle=tooth;ctx.fill();ctx.strokeStyle='#715854';ctx.lineWidth=Math.max(.7,size*.018);ctx.stroke();}}
     ctx.restore();
     if(f.rare&&!caught){ctx.fillStyle='#fff0a3';ctx.font=`${Math.max(10,size*.42)}px system-ui`;ctx.fillText('✦',-w*.42,-h*.37);}if(caught){ctx.save();ctx.globalAlpha=Math.max(.08,(f.caught-t)/.9);ctx.fillStyle='#fff';ctx.font='900 '+Math.max(14,size*.85)+'px system-ui';ctx.textAlign='center';ctx.fillText('✓',w*.34,0);ctx.restore();}ctx.restore();
   }
@@ -291,7 +291,7 @@
     hand={x:hand.x+ux*grip,y:hand.y+uy*grip};
     const nx=-uy,ny=ux,start={x:hand.x+ux*grip*.35,y:hand.y+uy*grip*.35},bend=side*R*.035,control={x:(start.x+tip.x)/2+nx*bend,y:(start.y+tip.y)/2+ny*bend};
     const point=q=>({x:(1-q)*(1-q)*start.x+2*(1-q)*q*control.x+q*q*tip.x,y:(1-q)*(1-q)*start.y+2*(1-q)*q*control.y+q*q*tip.y});
-    function shaft(extra){const left=[],right=[],steps=14;for(let i=0;i<=steps;i++){const q=i/steps,p=point(q),before=point(Math.max(0,q-.01)),after=point(Math.min(1,q+.01)),tx=after.x-before.x,ty=after.y-before.y,len=Math.hypot(tx,ty)||1,nx2=-ty/len,ny2=tx/len,half=R*(.029*(1-q)+.004)+extra;left.push([p.x+nx2*half,p.y+ny2*half]);right.push([p.x-nx2*half,p.y-ny2*half]);}ctx.beginPath();ctx.moveTo(left[0][0],left[0][1]);for(let i=1;i<left.length;i++)ctx.lineTo(left[i][0],left[i][1]);for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i][0],right[i][1]);ctx.closePath();}
+    function shaft(extra){const left=[],right=[],steps=14;for(let i=0;i<=steps;i++){const q=i/steps,p=point(q),before=point(Math.max(0,q-.01)),after=point(Math.min(1,q+.01)),tx=after.x-before.x,ty=after.y-before.y,len=Math.hypot(tx,ty)||1,nx2=-ty/len,ny2=tx/len,half=R*(.020*(1-q)+.003)+extra;left.push([p.x+nx2*half,p.y+ny2*half]);right.push([p.x-nx2*half,p.y-ny2*half]);}ctx.beginPath();ctx.moveTo(left[0][0],left[0][1]);for(let i=1;i<left.length;i++)ctx.lineTo(left[i][0],left[i][1]);for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i][0],right[i][1]);ctx.closePath();}
     ctx.save();ctx.lineJoin='round';ctx.lineCap='round';shaft(R*.006);ctx.fillStyle='#131923';ctx.fill();shaft(0);const rodFill=ctx.createLinearGradient(start.x,start.y,tip.x,tip.y);rodFill.addColorStop(0,'#707985');rodFill.addColorStop(.28,'#343c49');rodFill.addColorStop(.72,'#252b35');rodFill.addColorStop(1,'#111722');ctx.fillStyle=rodFill;ctx.fill();
     ctx.beginPath();for(let i=0;i<=14;i++){const q=i/14,p=point(q),before=point(Math.max(0,q-.01)),after=point(Math.min(1,q+.01)),tx=after.x-before.x,ty=after.y-before.y,len=Math.hypot(tx,ty)||1,nx2=-ty/len,ny2=tx/len,x=p.x+nx2*R*(.012*(1-q)+.001),y=p.y+ny2*R*(.012*(1-q)+.001);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle='#ffffffa0';ctx.lineWidth=Math.max(1,R*.004);ctx.stroke();
     // warm cork grip and moving reel
